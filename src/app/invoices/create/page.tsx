@@ -3,7 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { Invoice, InvoiceRow } from '@/components/invoice/types';
 import InvoiceHeader from '@/components/invoice/InvoiceHeader';
 import InvoiceTable from '@/components/invoice/InvoiceTable';
@@ -15,11 +15,26 @@ import InvoiceTotals from '@/components/invoice/InvoiceTotals';
  */
 export default function CreateInvoicePage() {
   const router = useRouter();
+  const [invoiceNumber, setInvoiceNumber] = useState<string>('...');
 
-  // Generar número de factura único (en producción, esto vendría de la BD)
-  const invoiceNumber = useMemo(() => {
-    const timestamp = Date.now();
-    return `INV-${timestamp.toString().slice(-6)}`;
+  // Obtener el siguiente número de factura al cargar el componente
+  useEffect(() => {
+    async function fetchNextInvoiceNumber() {
+      try {
+        const response = await fetch('/api/invoices/next-number');
+        if (response.ok) {
+          const data = await response.json();
+          setInvoiceNumber(data.invoiceNumber.toString());
+        } else {
+          console.error('Error al obtener número de factura');
+          setInvoiceNumber('ERROR');
+        }
+      } catch (error) {
+        console.error('Error al obtener número de factura:', error);
+        setInvoiceNumber('ERROR');
+      }
+    }
+    fetchNextInvoiceNumber();
   }, []);
 
   // Inicializar formulario con valores por defecto
@@ -68,11 +83,11 @@ export default function CreateInvoicePage() {
       const quantity = Number(item.quantity) || 0;
       const rate = Number(item.rate) || 0;
       const total = quantity * rate;
-      
+
       // Actualizar el total de cada fila
       const index = items.indexOf(item);
       setValue(`items.${index}.total`, total);
-      
+
       return sum + total;
     }, 0);
 
@@ -100,7 +115,6 @@ export default function CreateInvoicePage() {
 
       // Preparar los datos para enviar
       const invoiceData = {
-        invoiceNumber: data.invoiceNumber,
         date: data.date instanceof Date ? data.date.toISOString() : new Date(data.date).toISOString(),
         soldTo: data.soldTo,
         items: validItems.map(item => ({
@@ -132,9 +146,9 @@ export default function CreateInvoicePage() {
       }
 
       const savedInvoice = await response.json();
-      
+
       alert('Factura guardada exitosamente');
-      
+
       // Redirigir al historial de facturas
       router.push('/invoices/history');
     } catch (error: any) {

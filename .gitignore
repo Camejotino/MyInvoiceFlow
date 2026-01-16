@@ -12,3 +12,6 @@ pnpm-debug.log*
 **/*.log
 .idea
 .vscode
+prisma/data
+prisma/migrations
+prisma/data/dev.db

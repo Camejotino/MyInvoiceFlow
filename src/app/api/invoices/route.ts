@@ -16,11 +16,11 @@ export async function GET(request: Request) {
 
     const where = q
       ? {
-          OR: [
-            { invoiceNumber: { contains: q } },
-            { soldTo: { contains: q } },
-          ],
-        }
+        OR: [
+          { invoiceNumber: { contains: q } },
+          { soldTo: { contains: q } },
+        ],
+      }
       : {};
 
     const [items, total] = await Promise.all([
@@ -48,13 +48,12 @@ export async function GET(request: Request) {
 
 /**
  * POST /api/invoices
- * Crea una nueva factura
+ * Crea una nueva factura con número consecutivo automático
  */
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const {
-      invoiceNumber,
       date,
       soldTo,
       items,
@@ -64,13 +63,6 @@ export async function POST(request: Request) {
     } = body;
 
     // Validaciones
-    if (!invoiceNumber || typeof invoiceNumber !== 'string') {
-      return NextResponse.json(
-        { error: 'invoiceNumber requerido' },
-        { status: 400 }
-      );
-    }
-
     if (!date) {
       return NextResponse.json({ error: 'date requerido' }, { status: 400 });
     }
@@ -86,36 +78,67 @@ export async function POST(request: Request) {
       );
     }
 
-    // Crear la factura con sus items
-    const invoice = await prisma.invoice.create({
-      data: {
-        invoiceNumber,
-        date: new Date(date),
-        soldTo,
-        subtotal: new Prisma.Decimal(subtotal || 0),
-        dispatchFee: new Prisma.Decimal(dispatchFee || 0),
-        total: new Prisma.Decimal(total || 0),
-        items: {
-          create: items.map((item: any) => ({
-            date: item.date ? new Date(item.date) : null,
-            truckNumber: item.truckNumber || '',
-            ticketNumber: item.ticketNumber || '',
-            projectName: item.projectName || '',
-            quantity: new Prisma.Decimal(item.quantity || 0),
-            rate: new Prisma.Decimal(item.rate || 0),
-            total: new Prisma.Decimal(item.total || 0),
-          })),
+    // Usar transacción para obtener número, crear factura e incrementar contador
+    const invoice = await prisma.$transaction(async (tx) => {
+      // Obtener o crear Settings
+      let settings = await tx.settings.findUnique({
+        where: { id: 1 },
+      });
+
+      if (!settings) {
+        settings = await tx.settings.create({
+          data: {
+            id: 1,
+            nextInvoiceNumber: 2500,
+            defaultDispatchFee: 0,
+            companyInfo: 'Pino\'s Enterprise Multiservices',
+          },
+        });
+      }
+
+      const invoiceNumber = settings.nextInvoiceNumber.toString();
+
+      // Crear la factura con sus items
+      const newInvoice = await tx.invoice.create({
+        data: {
+          invoiceNumber,
+          date: new Date(date),
+          soldTo,
+          subtotal: new Prisma.Decimal(subtotal || 0),
+          dispatchFee: new Prisma.Decimal(dispatchFee || 0),
+          total: new Prisma.Decimal(total || 0),
+          items: {
+            create: items.map((item: any) => ({
+              date: item.date ? new Date(item.date) : null,
+              truckNumber: item.truckNumber || '',
+              ticketNumber: item.ticketNumber || '',
+              projectName: item.projectName || '',
+              quantity: new Prisma.Decimal(item.quantity || 0),
+              rate: new Prisma.Decimal(item.rate || 0),
+              total: new Prisma.Decimal(item.total || 0),
+            })),
+          },
         },
-      },
-      include: {
-        items: true,
-      },
+        include: {
+          items: true,
+        },
+      });
+
+      // Incrementar el contador para la próxima factura
+      await tx.settings.update({
+        where: { id: 1 },
+        data: {
+          nextInvoiceNumber: settings.nextInvoiceNumber + 1,
+        },
+      });
+
+      return newInvoice;
     });
 
     return NextResponse.json(invoice, { status: 201 });
   } catch (error: any) {
     console.error('Error al crear factura:', error);
-    
+
     if (error?.code === 'P2002') {
       return NextResponse.json(
         { error: 'El número de factura ya existe' },
