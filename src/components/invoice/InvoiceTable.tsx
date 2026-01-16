@@ -1,8 +1,15 @@
 "use client";
 
 import { useFieldArray, Control, useWatch, UseFormSetValue } from 'react-hook-form';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Invoice, InvoiceRow } from './types';
+
+type Truck = {
+  id: number;
+  number: string;
+  description: string;
+  active: boolean;
+};
 
 interface InvoiceTableProps {
   control: Control<Invoice>;
@@ -14,6 +21,8 @@ interface InvoiceTableProps {
  * Permite agregar/eliminar filas y calcula automáticamente los totales
  */
 export default function InvoiceTable({ control, setValue }: InvoiceTableProps) {
+  const [trucks, setTrucks] = useState<Truck[]>([]);
+
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'items',
@@ -24,6 +33,22 @@ export default function InvoiceTable({ control, setValue }: InvoiceTableProps) {
     control,
     name: 'items',
   });
+
+  // Fetch trucks on mount
+  useEffect(() => {
+    async function fetchTrucks() {
+      try {
+        const res = await fetch('/api/trucks');
+        if (res.ok) {
+          const data = await res.json();
+          setTrucks(data.items || []);
+        }
+      } catch (error) {
+        console.error('Error fetching trucks:', error);
+      }
+    }
+    fetchTrucks();
+  }, []);
 
   // Actualizar totales cuando cambian quantity o rate
   useEffect(() => {
@@ -129,7 +154,7 @@ export default function InvoiceTable({ control, setValue }: InvoiceTableProps) {
       <div className="overflow-x-auto invoice-table-scroll">
         <div className="overflow-y-auto max-h-[500px] invoice-table-scroll">
           <table className="w-full border-collapse invoice-table">
-            <thead  style={{ backgroundColor: '#ECD8B6' }}>
+            <thead style={{ backgroundColor: '#ECD8B6' }}>
               <tr>
                 <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider border-b" style={{ color: '#1F1E1D', borderColor: '#74654F' }}>
                   Date
@@ -187,11 +212,9 @@ export default function InvoiceTable({ control, setValue }: InvoiceTableProps) {
 
                     {/* Truck # */}
                     <td className="px-3 py-2 border-b" style={{ borderColor: '#ECD8B6' }}>
-                      <input
-                        type="text"
+                      <select
                         {...control.register(`items.${index}.truckNumber` as const)}
-                        placeholder="Truck #"
-                        className="w-full px-2 py-1 text-sm border rounded focus:outline-none"
+                        className="w-full px-2 py-1 text-sm border rounded focus:outline-none bg-white"
                         style={{ borderColor: '#74654F', borderWidth: '1px' }}
                         onFocus={(e) => {
                           e.currentTarget.style.borderColor = '#F89E1A';
@@ -202,7 +225,14 @@ export default function InvoiceTable({ control, setValue }: InvoiceTableProps) {
                           e.currentTarget.style.boxShadow = 'none';
                         }}
                         onKeyDown={(e) => handleKeyDown(e, index)}
-                      />
+                      >
+                        <option value="">Selecciona un camión</option>
+                        {trucks.map((truck) => (
+                          <option key={truck.id} value={truck.number}>
+                            {truck.number} - {truck.description}
+                          </option>
+                        ))}
+                      </select>
                     </td>
 
                     {/* Ticket # */}
