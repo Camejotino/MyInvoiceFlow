@@ -57,11 +57,11 @@ export default function InvoiceTotals({ control }: InvoiceTotalsProps) {
   };
 
   return (
-    <div className="rounded-lg shadow-sm p-6" style={{ backgroundColor: '#FEFEFE', border: '1px solid #74654F' }}>
+    <div className="rounded-lg shadow-sm p-6 invoice-totals" style={{ backgroundColor: '#FEFEFE', border: '1px solid #74654F' }}>
       <div className="flex justify-end">
-        <div className="w-full max-w-md space-y-4">
+        <div className="w-full max-w-md space-y-4 invoice-totals-inner">
           {/* Subtotal */}
-          <div className="flex justify-between items-center py-2 px-4 rounded-md" style={{ backgroundColor: '#ECD8B6' }}>
+          <div className="flex justify-between items-center py-2 px-4 rounded-md invoice-total-item" style={{ backgroundColor: '#ECD8B6' }}>
             <span className="text-sm font-medium" style={{ color: '#1F1E1D' }}>Subtotal</span>
             <span className="text-sm font-semibold text-right" style={{ color: '#1F1E1D' }}>
               {formatCurrency(subtotal)}
@@ -69,12 +69,12 @@ export default function InvoiceTotals({ control }: InvoiceTotalsProps) {
           </div>
 
           {/* Dispatch Fee */}
-          <div className="flex justify-between items-center py-2 px-4">
+          <div className="flex justify-between items-center py-2 px-4 invoice-total-item">
             <label className="text-sm font-medium" style={{ color: '#1F1E1D' }}>
               Dispatch Fee
             </label>
             <div className="flex items-center gap-2">
-              <span className="text-sm" style={{ color: '#74654F' }}>$</span>
+              <span className="text-sm print:hidden" style={{ color: '#74654F' }}>$</span>
               <input
                 type="number"
                 step="0.01"
@@ -99,7 +99,7 @@ export default function InvoiceTotals({ control }: InvoiceTotalsProps) {
           </div>
 
           {/* Total */}
-          <div className="flex justify-between items-center py-3 px-4 rounded-md" style={{ backgroundColor: '#ECD8B6', border: '2px solid #F89E1A' }}>
+          <div className="flex justify-between items-center py-3 px-4 rounded-md invoice-total-item invoice-total-final" style={{ backgroundColor: '#ECD8B6', border: '2px solid #F89E1A' }}>
             <span className="text-base font-bold" style={{ color: '#1F1E1D' }}>Total</span>
             <span className="text-lg font-bold text-right" style={{ color: '#1F1E1D' }}>
               {formatCurrency(total)}

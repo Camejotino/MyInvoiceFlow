@@ -126,10 +126,10 @@ export default function InvoiceTable({ control, setValue }: InvoiceTableProps) {
         </button>
       </div>
 
-      <div className="overflow-x-auto">
-        <div className="overflow-y-auto max-h-[500px]">
-          <table className="w-full border-collapse">
-            <thead className="sticky top-0" style={{ backgroundColor: '#ECD8B6' }}>
+      <div className="overflow-x-auto invoice-table-scroll">
+        <div className="overflow-y-auto max-h-[500px] invoice-table-scroll">
+          <table className="w-full border-collapse invoice-table">
+            <thead  style={{ backgroundColor: '#ECD8B6' }}>
               <tr>
                 <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider border-b" style={{ color: '#1F1E1D', borderColor: '#74654F' }}>
                   Date
@@ -152,7 +152,7 @@ export default function InvoiceTable({ control, setValue }: InvoiceTableProps) {
                 <th className="px-3 py-3 text-right text-xs font-medium uppercase tracking-wider border-b" style={{ color: '#1F1E1D', borderColor: '#74654F' }}>
                   Total x load
                 </th>
-                <th className="px-3 py-3 text-center text-xs font-medium uppercase tracking-wider border-b w-16" style={{ color: '#1F1E1D', borderColor: '#74654F' }}>
+                <th className="px-3 py-3 text-center text-xs font-medium uppercase tracking-wider border-b w-16 print:hidden" style={{ color: '#1F1E1D', borderColor: '#74654F' }}>
                   Acciones
                 </th>
               </tr>
@@ -310,7 +310,7 @@ export default function InvoiceTable({ control, setValue }: InvoiceTableProps) {
                     </td>
 
                     {/* Acciones */}
-                    <td className="px-3 py-2 border-b text-center" style={{ borderColor: '#ECD8B6' }}>
+                    <td className="px-3 py-2 border-b text-center print:hidden" style={{ borderColor: '#ECD8B6' }}>
                       {fields.length > 1 && (
                         <button
                           type="button"

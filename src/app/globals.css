@@ -53,6 +53,7 @@ html, body, #__next { height: 100%; }
     background: white;
   }
 
+  /* HEADER------------------------------------------------------------------------------------------------------------- */
   /* Reducir inputs SOLO en impresión */
   .invoice-header-print input {
     font-size: 11px !important;
@@ -125,4 +126,138 @@ html, body, #__next { height: 100%; }
   }
 }
 
+/* HEADER------------------------------------------------------------------------------------------------------------- */
 
+/* TABLE-------------------------------------------------------------------------------------------------------------- */
+@media print {
+  /* Quitar scroll y altura máxima */
+  .invoice-table-scroll {
+    overflow: visible !important;
+    max-height: none !important;
+  }
+
+  /* Asegurar que la tabla no se corte */
+  table {
+    page-break-inside: auto;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+}
+
+@media print {
+  /* Reducir altura de filas */
+  .invoice-table th,
+  .invoice-table td {
+    padding-top: 4px !important;
+    padding-bottom: 4px !important;
+    font-size: 11px !important;
+    line-height: 1.2 !important;
+  }
+
+  /* Compactar inputs dentro de la tabla */
+  .invoice-table input {
+    font-size: 11px !important;
+    padding: 2px 4px !important;
+    height: auto !important;
+    line-height: 1.2 !important;
+  }
+
+  /* Totales como texto compacto */
+  .invoice-table td div {
+    padding: 2px 4px !important;
+    font-size: 11px !important;
+    line-height: 1.2 !important;
+  }
+
+  /* Quitar bordes y fondos innecesarios */
+  .invoice-table input {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+}
+
+
+/* TABLE-------------------------------------------------------------------------------------------------------------- */
+
+@media print {
+  /* Quitar caja exterior */
+  .invoice-totals {
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Convertir columna en fila */
+  .invoice-totals-inner {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 16px !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    max-width: none !important;
+  }
+
+  /* Cada item en línea */
+  .invoice-total-item {
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    gap: 6px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    white-space: nowrap !important;
+     width: auto !important;
+    min-width: unset !important;
+  }
+  
+
+  /* Tipografía compacta */
+  .invoice-total-item span,
+  .invoice-total-item label,
+  .invoice-total-item input {
+    font-size: 11px !important;
+    line-height: 1.2 !important;
+  }
+
+  /* Dispatch Fee como texto (no input visual) */
+  .invoice-total-item input {
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    width: auto !important;
+    text-align: right !important;
+  }
+
+  /* TOTAL más fuerte pero compacto */
+  .invoice-total-final span {
+    font-weight: 700 !important;
+    font-size: 12px !important;
+  }
+}
+@media print {
+  .invoice-total-item input::-webkit-inner-spin-button,
+  .invoice-total-item input::-webkit-outer-spin-button {
+    appearance: none;
+  }
+}
+@media print {
+  .invoice-total-item input {
+    width: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+  }
+
+  .invoice-total-item .currency-symbol {
+    margin-right: 2px !important;
+  }
+}
