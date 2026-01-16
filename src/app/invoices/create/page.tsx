@@ -8,6 +8,7 @@ import { Invoice, InvoiceRow } from '@/components/invoice/types';
 import InvoiceHeader from '@/components/invoice/InvoiceHeader';
 import InvoiceTable from '@/components/invoice/InvoiceTable';
 import InvoiceTotals from '@/components/invoice/InvoiceTotals';
+import TruckTotals from '@/components/invoice/TruckTotals';
 
 /**
  * Página de creación de facturas
@@ -200,9 +201,16 @@ export default function CreateInvoicePage() {
           {/* Tabla de Detalles */}
           <InvoiceTable control={control} setValue={setValue} />
 
-          {/* Resumen de Totales */}
-          <div className="flex justify-end">
-            <InvoiceTotals control={control} />
+          {/* Resumen de Totales - Layout de dos columnas */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Totales por Camión - Izquierda */}
+            <div>
+              <TruckTotals control={control} />
+            </div>
+            {/* Totales Generales - Derecha */}
+            <div className="flex justify-end">
+              <InvoiceTotals control={control} />
+            </div>
           </div>
 
           {/* Botones de acción */}
