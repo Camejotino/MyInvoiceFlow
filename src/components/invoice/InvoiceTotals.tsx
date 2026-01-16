@@ -29,7 +29,7 @@ export default function InvoiceTotals({ control }: InvoiceTotalsProps) {
    */
   const subtotal = useMemo(() => {
     if (!items || items.length === 0) return 0;
-    
+
     return items.reduce((sum, item) => {
       const quantity = Number(item.quantity) || 0;
       const rate = Number(item.rate) || 0;
@@ -84,6 +84,7 @@ export default function InvoiceTotals({ control }: InvoiceTotalsProps) {
                   min: 0,
                 })}
                 placeholder="0.00"
+                size={Math.max(4, String(dispatchFee || '0.00').length)}
                 className="w-32 px-2 py-1 text-sm border rounded text-right focus:outline-none"
                 style={{ borderColor: '#74654F', borderWidth: '1px' }}
                 onFocus={(e) => {

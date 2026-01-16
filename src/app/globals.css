@@ -2,12 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body, #__next { height: 100%; }
+html,
+body,
+#__next {
+  height: 100%;
+}
 
 /* Custom hover styles for the color scheme */
 .hover-primary {
   transition: background-color 0.2s ease;
 }
+
 .hover-primary:hover {
   background-color: #F3B85E !important;
 }
@@ -15,6 +20,7 @@ html, body, #__next { height: 100%; }
 .hover-primary-light {
   transition: background-color 0.2s ease;
 }
+
 .hover-primary-light:hover {
   background-color: #ECD8B6 !important;
 }
@@ -22,6 +28,7 @@ html, body, #__next { height: 100%; }
 .hover-primary-dark {
   transition: background-color 0.2s ease;
 }
+
 .hover-primary-dark:hover {
   background-color: #1F1E1D !important;
 }
@@ -29,6 +36,7 @@ html, body, #__next { height: 100%; }
 .hover-text-primary {
   transition: color 0.2s ease;
 }
+
 .hover-text-primary:hover {
   color: #F3B85E !important;
 }
@@ -36,6 +44,7 @@ html, body, #__next { height: 100%; }
 .hover-text-dark {
   transition: color 0.2s ease;
 }
+
 .hover-text-dark:hover {
   color: #1F1E1D !important;
 }
@@ -43,10 +52,13 @@ html, body, #__next { height: 100%; }
 .hover-row {
   transition: background-color 0.2s ease;
 }
+
 .hover-row:hover {
   background-color: #ECD8B6 !important;
 }
+
 @media print {
+
   /* Ajustes generales */
   body {
     font-size: 12px;
@@ -75,6 +87,7 @@ html, body, #__next { height: 100%; }
     margin-bottom: 2px !important;
   }
 }
+
 @media print {
   .invoice-header-print input {
     border: none !important;
@@ -82,11 +95,13 @@ html, body, #__next { height: 100%; }
     padding: 0 !important;
   }
 }
+
 @media print {
   input[type="date"] {
     font-size: 11px !important;
   }
 }
+
 @media print {
   .invoice-number-field {
     border: none !important;
@@ -96,14 +111,16 @@ html, body, #__next { height: 100%; }
     font-weight: 600;
   }
 }
+
 @media print {
+
   /* Colocar todo el bloque a la derecha */
   .invoice-header-right {
     display: grid !important;
     grid-template-columns: auto auto auto;
     gap: 12px;
     align-items: end;
-    justify-content: end;    
+    justify-content: end;
     position: relative;
     z-index: 999 !important;
     margin-top: -900px !important;
@@ -130,6 +147,7 @@ html, body, #__next { height: 100%; }
 
 /* TABLE-------------------------------------------------------------------------------------------------------------- */
 @media print {
+
   /* Quitar scroll y altura máxima */
   .invoice-table-scroll {
     overflow: visible !important;
@@ -152,6 +170,7 @@ html, body, #__next { height: 100%; }
 }
 
 @media print {
+
   /* Reducir altura de filas */
   .invoice-table th,
   .invoice-table td {
@@ -188,6 +207,7 @@ html, body, #__next { height: 100%; }
 /* TABLE-------------------------------------------------------------------------------------------------------------- */
 
 @media print {
+
   /* Quitar caja exterior */
   .invoice-totals {
     padding: 0 !important;
@@ -200,7 +220,7 @@ html, body, #__next { height: 100%; }
     display: flex !important;
     flex-direction: row !important;
     gap: 16px !important;
-    align-items: center !important;
+    align-items: baseline !important;
     justify-content: flex-end !important;
     max-width: none !important;
   }
@@ -212,13 +232,28 @@ html, body, #__next { height: 100%; }
     border: none !important;
     gap: 6px !important;
     display: inline-flex !important;
-    align-items: center !important;
+    align-items: baseline !important;
     justify-content: flex-start !important;
     white-space: nowrap !important;
-     width: auto !important;
+    width: auto !important;
     min-width: unset !important;
   }
-  
+
+  /* Fix alignment for nested containers inside items (like Dispatch Fee) */
+  .invoice-total-item>div {
+    display: inline-flex !important;
+    align-items: baseline !important;
+    gap: 20px !important;
+  }
+
+  /* Ensure all inline elements align to baseline */
+  .invoice-total-item span,
+  .invoice-total-item label,
+  .invoice-total-item input {
+    vertical-align: baseline !important;
+    line-height: 1.2 !important;
+  }
+
 
   /* Tipografía compacta */
   .invoice-total-item span,
@@ -229,13 +264,15 @@ html, body, #__next { height: 100%; }
   }
 
   /* Dispatch Fee como texto (no input visual) */
-  .invoice-total-item input {
+  /* .invoice-total-item input {
     border: none !important;
     background: transparent !important;
     padding: 0 !important;
-    width: auto !important;
+    width: fit-content !important;
+    max-width: fit-content !important;
+    min-width: 0 !important;
     text-align: right !important;
-  }
+  } */
 
   /* TOTAL más fuerte pero compacto */
   .invoice-total-final span {
@@ -243,18 +280,24 @@ html, body, #__next { height: 100%; }
     font-size: 12px !important;
   }
 }
+
 @media print {
+
   .invoice-total-item input::-webkit-inner-spin-button,
   .invoice-total-item input::-webkit-outer-spin-button {
     appearance: none;
   }
 }
+
 @media print {
-  .invoice-total-item input {
-    width: auto !important;
+  .invoice-total-item input[type="number"] {
+    width: 3ch !important;
+    max-width: 3ch !important;
     padding: 0 !important;
     margin: 0 !important;
     border: none !important;
+    background: transparent !important;
+    text-align: left !important;
   }
 
   .invoice-total-item .currency-symbol {
