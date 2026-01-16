@@ -1,0 +1,118 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "./schemas/package.schema.json",
+  "title": "Local package.json schema (offline)",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "name": { "type": "string" },
+    "version": { "type": "string" },
+    "private": { "type": "boolean" },
+    "type": { "type": "string", "enum": ["module", "commonjs"] },
+    "main": { "type": "string" },
+    "module": { "type": "string" },
+    "types": { "type": "string" },
+    "scripts": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "dependencies": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "devDependencies": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "peerDependencies": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "optionalDependencies": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "engines": {
+      "type": "object",
+      "additionalProperties": { "type": ["string", "object"] }
+    },
+    "os": {
+      "type": ["array"],
+      "items": { "type": "string" }
+    },
+    "cpu": {
+      "type": ["array"],
+      "items": { "type": "string" }
+    },
+    "bugs": {
+      "oneOf": [
+        { "type": "string" },
+        {
+          "type": "object",
+          "properties": {
+            "url": { "type": "string" },
+            "email": { "type": "string" }
+          },
+          "additionalProperties": true
+        }
+      ]
+    },
+    "homepage": { "type": "string" },
+    "license": { "type": "string" },
+    "author": {
+      "oneOf": [
+        { "type": "string" },
+        {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "email": { "type": "string" },
+            "url": { "type": "string" }
+          },
+          "additionalProperties": true
+        }
+      ]
+    },
+    "repository": {
+      "oneOf": [
+        { "type": "string" },
+        {
+          "type": "object",
+          "properties": {
+            "type": { "type": "string" },
+            "url": { "type": "string" },
+            "directory": { "type": "string" }
+          },
+          "additionalProperties": true
+        }
+      ]
+    },
+    "files": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "bin": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "object", "additionalProperties": { "type": "string" } }
+      ]
+    },
+    "workspaces": {
+      "oneOf": [
+        { "type": "array", "items": { "type": "string" } },
+        {
+          "type": "object",
+          "properties": {
+            "packages": { "type": "array", "items": { "type": "string" } },
+            "nohoist": { "type": "array", "items": { "type": "string" } }
+          },
+          "additionalProperties": true
+        }
+      ]
+    },
+    "publishConfig": { "type": "object" },
+    "packageManager": { "type": "string" },
+    "build": { "type": ["object", "string"] }
+  },
+  "required": ["name", "version" ]
+}
