@@ -3,10 +3,12 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import type { Truck } from '@prisma/client';
 import NewTruckModal from '@/components/trucks/new-truck-modal';
+import DeleteTruckModal from '@/components/trucks/delete-truck-modal';
 
 export default function TrucksPage() {
   const [trucks, setTrucks] = useState<Truck[]>([]);
   const [showModal, setShowModal] = useState(false);
+  const [truckToDelete, setTruckToDelete] = useState<Truck | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -31,11 +33,16 @@ export default function TrucksPage() {
     fetchTrucks(); // Refresh the truck list
   };
 
+  const handleDeleted = () => {
+    fetchTrucks(); // Refresh after delete
+    setTruckToDelete(null);
+  };
+
   return (
     <div className="p-6 space-y-4" style={{ backgroundColor: '#FEFEFE', minHeight: '100vh' }}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <button 
+          <button
             onClick={() => setShowModal(true)}
             className="px-3 py-2 text-white rounded hover-primary"
             style={{ backgroundColor: '#F89E1A' }}
@@ -44,8 +51,8 @@ export default function TrucksPage() {
           </button>
           <h1 className="text-xl font-semibold" style={{ color: '#1F1E1D' }}>Camiones</h1>
         </div>
-        <Link 
-          href="/" 
+        <Link
+          href="/"
           className="px-4 py-2 text-white rounded-lg hover-primary-dark"
           style={{ backgroundColor: '#74654F' }}
         >
@@ -78,13 +85,14 @@ export default function TrucksPage() {
                   <td className="py-2 px-4" style={{ color: '#74654F' }}>{t.description}</td>
                   <td className="py-2 px-4" style={{ color: '#74654F' }}>{t.active ? 'Sí' : 'No'}</td>
                   <td className="py-2 px-4">
-                    <Link 
-                      className="hover:underline hover-text-primary transition-colors" 
+                    <button
+                      onClick={() => setTruckToDelete(t)}
+                      className="hover:text-red-600 transition-colors"
                       style={{ color: '#F89E1A' }}
-                      href={`/trucks/edit?id=${t.id}`}
+                      title="Eliminar"
                     >
-                      Editar
-                    </Link>
+                      Eliminar
+                    </button>
                   </td>
                 </tr>
               ))
@@ -93,9 +101,16 @@ export default function TrucksPage() {
         </table>
       </div>
       {showModal && (
-        <NewTruckModal 
-          onClose={() => setShowModal(false)} 
+        <NewTruckModal
+          onClose={() => setShowModal(false)}
           onSave={handleSave}
+        />
+      )}
+      {truckToDelete && (
+        <DeleteTruckModal
+          truck={truckToDelete}
+          onClose={() => setTruckToDelete(null)}
+          onDeleted={handleDeleted}
         />
       )}
     </div>
