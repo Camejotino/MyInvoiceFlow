@@ -15,3 +15,5 @@ pnpm-debug.log*
 prisma/data
 prisma/migrations
 prisma/data/dev.db
+dev.db
+
