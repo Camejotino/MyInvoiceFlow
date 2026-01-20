@@ -9,6 +9,7 @@ import InvoiceHeader from '@/components/invoice/InvoiceHeader';
 import InvoiceTable from '@/components/invoice/InvoiceTable';
 import InvoiceTotals from '@/components/invoice/InvoiceTotals';
 import TruckTotals from '@/components/invoice/TruckTotals';
+import { apiClient } from '@/lib/api-client';
 
 /**
  * Página de creación de facturas
@@ -22,14 +23,8 @@ export default function CreateInvoicePage() {
   useEffect(() => {
     async function fetchNextInvoiceNumber() {
       try {
-        const response = await fetch('/api/invoices/next-number');
-        if (response.ok) {
-          const data = await response.json();
-          setInvoiceNumber(data.invoiceNumber.toString());
-        } else {
-          console.error('Error al obtener número de factura');
-          setInvoiceNumber('ERROR');
-        }
+        const data = await apiClient.getInvoiceNextNumber();
+        setInvoiceNumber(data.invoiceNumber.toString());
       } catch (error) {
         console.error('Error al obtener número de factura:', error);
         setInvoiceNumber('ERROR');
@@ -85,10 +80,6 @@ export default function CreateInvoicePage() {
       const rate = Number(item.rate) || 0;
       const total = quantity * rate;
 
-      // Actualizar el total de cada fila
-      const index = items.indexOf(item);
-      setValue(`items.${index}.total`, total);
-
       return sum + total;
     }, 0);
 
@@ -133,20 +124,7 @@ export default function CreateInvoicePage() {
       };
 
       // Guardar en la base de datos
-      const response = await fetch('/api/invoices', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(invoiceData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Error al guardar la factura');
-      }
-
-      const savedInvoice = await response.json();
+      const savedInvoice = await apiClient.createInvoice(invoiceData);
 
       alert('Factura guardada exitosamente');
 
@@ -168,7 +146,7 @@ export default function CreateInvoicePage() {
             <p className="mt-1 print:hidden" style={{ color: '#74654F' }}>Complete los datos para generar una nueva factura</p>
           </div>
           <div className="flex gap-2 print:hidden" style={{ zIndex: 9999, position: 'relative', pointerEvents: 'auto' }}>
-            <a
+            <Link
               href="/invoices/history"
               className="px-4 py-2 text-white rounded-lg transition-colors duration-200 no-underline cursor-pointer"
               style={{ display: 'inline-block', textDecoration: 'none', backgroundColor: '#F89E1A' }}
@@ -176,8 +154,8 @@ export default function CreateInvoicePage() {
               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#F89E1A'}
             >
               Historial de Facturas
-            </a>
-            <a
+            </Link>
+            <Link
               href="/"
               className="px-4 py-2 text-white rounded-lg transition-colors duration-200 no-underline cursor-pointer"
               style={{ display: 'inline-block', textDecoration: 'none', backgroundColor: '#74654F' }}
@@ -185,7 +163,7 @@ export default function CreateInvoicePage() {
               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#74654F'}
             >
               Volver a Inicio
-            </a>
+            </Link>
           </div>
         </div>
 

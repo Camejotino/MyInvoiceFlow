@@ -1,6 +1,7 @@
 "use client";
 import { useState } from 'react';
 import type { Truck } from '@prisma/client';
+import { apiClient } from '@/lib/api-client';
 
 interface DeleteTruckModalProps {
     truck: Truck;
@@ -16,15 +17,14 @@ export default function DeleteTruckModal({ truck, onClose, onDeleted }: DeleteTr
         setError(null);
         setLoading(true);
         try {
-            const res = await fetch(`/api/trucks?id=${truck.id}`, {
-                method: 'DELETE',
-            });
-            if (!res.ok) {
-                const data = await res.json().catch(() => ({}));
-                setError(data.error || 'Error al eliminar');
-            } else {
+            try {
+                await apiClient.deleteTruck(truck.id);
                 onDeleted();
                 onClose();
+            } catch (err: any) {
+                setError(err.message || 'Error de conexión');
+            } finally {
+                setLoading(false);
             }
         } catch (err) {
             setError('Error de conexión');

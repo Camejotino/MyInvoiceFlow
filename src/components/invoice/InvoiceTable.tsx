@@ -3,6 +3,7 @@
 import { useFieldArray, Control, useWatch, UseFormSetValue } from 'react-hook-form';
 import { useEffect, useState } from 'react';
 import { Invoice, InvoiceRow } from './types';
+import { apiClient } from '@/lib/api-client';
 
 type Truck = {
   id: number;
@@ -38,11 +39,9 @@ export default function InvoiceTable({ control, setValue }: InvoiceTableProps) {
   useEffect(() => {
     async function fetchTrucks() {
       try {
-        const res = await fetch('/api/trucks');
-        if (res.ok) {
-          const data = await res.json();
-          setTrucks(data.items || []);
-        }
+        // Use apiClient to handle both Web and Electron (IPC) environments
+        const data = await apiClient.searchTrucks({ pageSize: 1000 });
+        setTrucks(data.items || []);
       } catch (error) {
         console.error('Error fetching trucks:', error);
       }
@@ -58,7 +57,11 @@ export default function InvoiceTable({ control, setValue }: InvoiceTableProps) {
       const quantity = Number(item.quantity) || 0;
       const rate = Number(item.rate) || 0;
       const total = quantity * rate;
-      setValue(`items.${index}.total`, total, { shouldValidate: false });
+
+      // Solo actualizar si el valor cambió para evitar loops infinitos
+      if (item.total !== total) {
+        setValue(`items.${index}.total`, total, { shouldValidate: false });
+      }
     });
   }, [items, setValue]);
 

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { apiClient } from '@/lib/api-client';
 
 interface InvoiceRowItem {
   id: number;
@@ -45,13 +46,13 @@ export default function InvoiceHistoryPage() {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch('/api/invoices');
-      
-      if (!response.ok) {
-        throw new Error('Error al cargar facturas');
-      }
 
-      const data = await response.json();
+      const data = await apiClient.searchInvoices({
+        q: '',
+        page: 1,
+        pageSize: 100 // Load more by default or implement pagination properly
+      });
+
       setInvoices(data.items || []);
     } catch (err: any) {
       console.error('Error al cargar facturas:', err);
@@ -71,14 +72,7 @@ export default function InvoiceHistoryPage() {
 
     try {
       setDeletingId(id);
-      const response = await fetch(`/api/invoices/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Error al eliminar factura');
-      }
+      await apiClient.deleteInvoice(id);
 
       // Recargar la lista
       await loadInvoices();

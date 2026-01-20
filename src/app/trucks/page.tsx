@@ -4,6 +4,7 @@ import Link from 'next/link';
 import type { Truck } from '@prisma/client';
 import NewTruckModal from '@/components/trucks/new-truck-modal';
 import DeleteTruckModal from '@/components/trucks/delete-truck-modal';
+import { apiClient } from '@/lib/api-client';
 
 export default function TrucksPage() {
   const [trucks, setTrucks] = useState<Truck[]>([]);
@@ -17,11 +18,8 @@ export default function TrucksPage() {
 
   async function fetchTrucks() {
     try {
-      const res = await fetch('/api/trucks');
-      if (res.ok) {
-        const data = await res.json();
-        setTrucks(data.items || []);
-      }
+      const data = await apiClient.searchTrucks({});
+      setTrucks(data.items || []);
     } catch (error) {
       console.error('Error fetching trucks:', error);
     } finally {

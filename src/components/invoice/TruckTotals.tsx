@@ -3,6 +3,7 @@
 import { Control, useWatch } from 'react-hook-form';
 import { useMemo, useState, useEffect } from 'react';
 import { Invoice } from './types';
+import { apiClient } from '@/lib/api-client';
 
 type Truck = {
     id: number;
@@ -31,11 +32,8 @@ export default function TruckTotals({ control }: TruckTotalsProps) {
     useEffect(() => {
         async function fetchTrucks() {
             try {
-                const res = await fetch('/api/trucks');
-                if (res.ok) {
-                    const data = await res.json();
-                    setTrucks(data.items || []);
-                }
+                const data = await apiClient.searchTrucks({ pageSize: 1000 });
+                setTrucks(data.items || []);
             } catch (error) {
                 console.error('Error fetching trucks:', error);
             }

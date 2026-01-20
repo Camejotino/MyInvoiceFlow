@@ -1,0 +1,87 @@
+generator client {
+  provider      = "prisma-client-js"
+  output        = "../electron/prisma-client"
+  binaryTargets = ["native", "windows"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Truck {
+  id          Int      @id @default(autoincrement())
+  number      String   @unique
+  description String
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  tickets     Ticket[]
+}
+
+model Project {
+  id        Int      @id @default(autoincrement())
+  name      String
+  poNumber  String?
+  createdAt DateTime @default(now())
+  tickets   Ticket[]
+}
+
+model Ticket {
+  id           Int      @id @default(autoincrement())
+  date         DateTime
+  truckId      Int
+  ticketNumber String
+  projectId    Int
+  tonsOrHours  Decimal
+  rate         Decimal
+  total        Decimal
+  invoiceId    Int?
+  createdAt    DateTime @default(now())
+
+  truck   Truck    @relation(fields: [truckId], references: [id])
+  project Project  @relation(fields: [projectId], references: [id])
+  invoice Invoice? @relation(fields: [invoiceId], references: [id])
+
+  @@index([truckId])
+  @@index([projectId])
+  @@index([invoiceId])
+}
+
+model Invoice {
+  id            Int      @id @default(autoincrement())
+  invoiceNumber String   @unique
+  date          DateTime
+  soldTo        String
+  subtotal      Decimal
+  dispatchFee   Decimal
+  total         Decimal
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  items   InvoiceRowItem[]
+  tickets Ticket[]
+}
+
+model InvoiceRowItem {
+  id           Int       @id @default(autoincrement())
+  invoiceId    Int
+  date         DateTime?
+  truckNumber  String
+  ticketNumber String
+  projectName  String
+  quantity     Decimal
+  rate         Decimal
+  total        Decimal
+  createdAt    DateTime  @default(now())
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+}
+
+model Settings {
+  id                 Int     @id @default(1)
+  defaultDispatchFee Decimal
+  nextInvoiceNumber  Int
+  companyInfo        String
+}
