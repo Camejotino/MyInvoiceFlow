@@ -38,6 +38,8 @@ export default function InvoiceHistoryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortConfig, setSortConfig] = useState<{ key: keyof Invoice | 'itemsCount'; direction: 'asc' | 'desc' } | null>({ key: 'date', direction: 'desc' });
 
   /**
    * Carga las facturas desde la API
@@ -112,6 +114,62 @@ export default function InvoiceHistoryPage() {
     loadInvoices();
   }, []);
 
+  /**
+   * Maneja el ordenamiento
+   */
+  const requestSort = (key: keyof Invoice | 'itemsCount') => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  /**
+   * Obtiene las facturas filtradas y ordenadas
+   */
+  const getProcessedInvoices = () => {
+    let processed = [...invoices];
+
+    // Filtrado
+    if (searchTerm) {
+      const lowSearch = searchTerm.toLowerCase();
+      processed = processed.filter(invoice =>
+        invoice.invoiceNumber.toLowerCase().includes(lowSearch) ||
+        invoice.soldTo.toLowerCase().includes(lowSearch) ||
+        formatDate(invoice.date).toLowerCase().includes(lowSearch)
+      );
+    }
+
+    // Ordenamiento
+    if (sortConfig) {
+      processed.sort((a, b) => {
+        let aValue: any = sortConfig.key === 'itemsCount' ? a.items.length : a[sortConfig.key as keyof Invoice];
+        let bValue: any = sortConfig.key === 'itemsCount' ? b.items.length : b[sortConfig.key as keyof Invoice];
+
+        if (aValue === null || aValue === undefined) return 1;
+        if (bValue === null || bValue === undefined) return -1;
+
+        if (aValue < bValue) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+
+    return processed;
+  };
+
+  const processedInvoices = getProcessedInvoices();
+
+  const SortIndicator = ({ column }: { column: keyof Invoice | 'itemsCount' }) => {
+    if (sortConfig?.key !== column) return <span className="ml-1 opacity-30">↕</span>;
+    return <span className="ml-1">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>;
+  };
+
   return (
     <div className="min-h-screen py-8 px-4" style={{ backgroundColor: '#FEFEFE' }}>
       <div className="max-w-7xl mx-auto">
@@ -147,6 +205,31 @@ export default function InvoiceHistoryPage() {
         {error && (
           <div className="mb-4 rounded-lg p-4" style={{ backgroundColor: '#ECD8B6', border: '1px solid #74654F' }}>
             <p style={{ color: '#1F1E1D' }}>{error}</p>
+          </div>
+        )}
+
+        {/* Filtros */}
+        {!loading && invoices.length > 0 && (
+          <div className="mb-6">
+            <div className="relative max-w-md">
+              <input
+                type="text"
+                placeholder="Buscar por número, cliente o fecha..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 rounded-lg border focus:outline-none focus:ring-2 transition-all duration-200"
+                style={{
+                  backgroundColor: '#FEFEFE',
+                  borderColor: '#74654F',
+                  color: '#1F1E1D'
+                }}
+              />
+              <div className="absolute left-3 top-2.5">
+                <svg className="w-5 h-5" style={{ color: '#74654F' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+            </div>
           </div>
         )}
 
@@ -194,31 +277,59 @@ export default function InvoiceHistoryPage() {
 
         {/* Tabla de facturas */}
         {!loading && invoices.length > 0 && (
-          <div className="rounded-lg shadow-sm overflow-hidden" style={{ backgroundColor: '#FEFEFE', border: '1px solid #74654F' }}>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead style={{ backgroundColor: '#ECD8B6' }}>
+          <div className="rounded-lg shadow-sm border overflow-hidden" style={{ backgroundColor: '#FEFEFE', borderColor: '#74654F' }}>
+            <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
+              <table className="w-full border-collapse">
+                <thead className="sticky top-0 z-10" style={{ backgroundColor: '#ECD8B6' }}>
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: '#1F1E1D' }}>
-                      Número
+                    <th
+                      className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-opacity-80 transition-colors"
+                      style={{ color: '#1F1E1D' }}
+                      onClick={() => requestSort('invoiceNumber')}
+                    >
+                      Número <SortIndicator column="invoiceNumber" />
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: '#1F1E1D' }}>
-                      Fecha
+                    <th
+                      className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-opacity-80 transition-colors"
+                      style={{ color: '#1F1E1D' }}
+                      onClick={() => requestSort('date')}
+                    >
+                      Fecha <SortIndicator column="date" />
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: '#1F1E1D' }}>
-                      Cliente
+                    <th
+                      className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-opacity-80 transition-colors"
+                      style={{ color: '#1F1E1D' }}
+                      onClick={() => requestSort('soldTo')}
+                    >
+                      Cliente <SortIndicator column="soldTo" />
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: '#1F1E1D' }}>
-                      Items
+                    <th
+                      className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-opacity-80 transition-colors"
+                      style={{ color: '#1F1E1D' }}
+                      onClick={() => requestSort('itemsCount')}
+                    >
+                      Items <SortIndicator column="itemsCount" />
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider" style={{ color: '#1F1E1D' }}>
-                      Subtotal
+                    <th
+                      className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-opacity-80 transition-colors"
+                      style={{ color: '#1F1E1D' }}
+                      onClick={() => requestSort('subtotal')}
+                    >
+                      Subtotal <SortIndicator column="subtotal" />
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider" style={{ color: '#1F1E1D' }}>
-                      Dispatch Fee
+                    <th
+                      className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-opacity-80 transition-colors"
+                      style={{ color: '#1F1E1D' }}
+                      onClick={() => requestSort('dispatchFee')}
+                    >
+                      Dispatch Fee <SortIndicator column="dispatchFee" />
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider" style={{ color: '#1F1E1D' }}>
-                      Total
+                    <th
+                      className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-opacity-80 transition-colors"
+                      style={{ color: '#1F1E1D' }}
+                      onClick={() => requestSort('total')}
+                    >
+                      Total <SortIndicator column="total" />
                     </th>
                     <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" style={{ color: '#1F1E1D' }}>
                       Acciones
@@ -226,84 +337,92 @@ export default function InvoiceHistoryPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y" style={{ backgroundColor: '#FEFEFE', borderColor: '#74654F' }}>
-                  {invoices.map((invoice) => (
-                    <tr key={invoice.id} style={{ backgroundColor: '#FEFEFE' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#ECD8B6'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FEFEFE'}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium" style={{ color: '#1F1E1D' }}>
-                          {invoice.invoiceNumber}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm" style={{ color: '#74654F' }}>
-                          {formatDate(invoice.date)}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm" style={{ color: '#1F1E1D' }}>{invoice.soldTo}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm" style={{ color: '#74654F' }}>
-                          {invoice.items.length} item(s)
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right">
-                        <div className="text-sm font-medium" style={{ color: '#1F1E1D' }}>
-                          {formatCurrency(Number(invoice.subtotal))}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right">
-                        <div className="text-sm" style={{ color: '#74654F' }}>
-                          {formatCurrency(Number(invoice.dispatchFee))}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right">
-                        <div className="text-sm font-bold" style={{ color: '#F89E1A' }}>
-                          {formatCurrency(Number(invoice.total))}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <button
-                          onClick={() => handleDelete(invoice.id)}
-                          disabled={deletingId === invoice.id}
-                          className="transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                          style={{ color: '#74654F' }}
-                          onMouseEnter={(e) => !e.currentTarget.disabled && (e.currentTarget.style.color = '#1F1E1D')}
-                          onMouseLeave={(e) => !e.currentTarget.disabled && (e.currentTarget.style.color = '#74654F')}
-                          title="Eliminar factura"
-                        >
-                          {deletingId === invoice.id ? (
-                            <svg
-                              className="w-5 h-5 animate-spin"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                              />
-                            </svg>
-                          ) : (
-                            <svg
-                              className="w-5 h-5"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                              />
-                            </svg>
-                          )}
-                        </button>
+                  {processedInvoices.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="px-6 py-12 text-center" style={{ color: '#74654F' }}>
+                        No se encontraron facturas que coincidan con la búsqueda.
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    processedInvoices.map((invoice) => (
+                      <tr key={invoice.id} style={{ backgroundColor: '#FEFEFE' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#ECD8B6'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FEFEFE'}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium" style={{ color: '#1F1E1D' }}>
+                            {invoice.invoiceNumber}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm" style={{ color: '#74654F' }}>
+                            {formatDate(invoice.date)}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm" style={{ color: '#1F1E1D' }}>{invoice.soldTo}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm" style={{ color: '#74654F' }}>
+                            {invoice.items.length} item(s)
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                          <div className="text-sm font-medium" style={{ color: '#1F1E1D' }}>
+                            {formatCurrency(Number(invoice.subtotal))}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                          <div className="text-sm" style={{ color: '#74654F' }}>
+                            {formatCurrency(Number(invoice.dispatchFee))}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                          <div className="text-sm font-bold" style={{ color: '#F89E1A' }}>
+                            {formatCurrency(Number(invoice.total))}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                          <button
+                            onClick={() => handleDelete(invoice.id)}
+                            disabled={deletingId === invoice.id}
+                            className="transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            style={{ color: '#74654F' }}
+                            onMouseEnter={(e) => !e.currentTarget.disabled && (e.currentTarget.style.color = '#1F1E1D')}
+                            onMouseLeave={(e) => !e.currentTarget.disabled && (e.currentTarget.style.color = '#74654F')}
+                            title="Eliminar factura"
+                          >
+                            {deletingId === invoice.id ? (
+                              <svg
+                                className="w-5 h-5 animate-spin"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                                />
+                              </svg>
+                            ) : (
+                              <svg
+                                className="w-5 h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                />
+                              </svg>
+                            )}
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
