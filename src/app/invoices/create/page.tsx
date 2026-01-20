@@ -40,6 +40,7 @@ export default function CreateInvoicePage() {
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { errors },
   } = useForm<Invoice>({
     defaultValues: {
@@ -195,13 +196,33 @@ export default function CreateInvoicePage() {
           <div className="flex justify-end gap-4 pt-6 print:hidden" style={{ borderTop: '1px solid #74654F' }}>
             <button
               type="button"
-              onClick={() => router.push('/')}
+              onClick={() => {
+                reset({
+                  date: new Date(),
+                  soldTo: '',
+                  invoiceNumber: invoiceNumber,
+                  items: [
+                    {
+                      date: new Date(),
+                      truckNumber: '',
+                      ticketNumber: '',
+                      projectName: '',
+                      quantity: 0,
+                      rate: 0,
+                      total: 0,
+                    },
+                  ],
+                  subtotal: 0,
+                  dispatchFee: 0,
+                  total: 0,
+                });
+              }}
               className="px-6 py-3 rounded-lg transition-colors duration-200 font-medium"
               style={{ border: '1px solid #74654F', color: '#74654F', backgroundColor: '#FEFEFE' }}
               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#ECD8B6'}
               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FEFEFE'}
             >
-              Cancelar
+              Limpiar
             </button>
             <button
               type="submit"
