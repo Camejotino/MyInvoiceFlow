@@ -13,13 +13,13 @@ export default function HomePage() {
             <div className="flex items-center space-x-4">
               <h1 className="text-xl font-bold" style={{ color: '#1F1E1D' }}>MyInvoiceFlow</h1>
             </div>
-            
+
             {/* Icono en la parte superior derecha */}
             <div className="flex items-center space-x-4">
-              <Image 
-                src="/K.webp" 
-                alt="Logo" 
-                width={64} 
+              <Image
+                src="icono.ico"
+                alt="Logo"
+                width={64}
                 height={64}
                 className="object-contain"
               />
@@ -33,10 +33,10 @@ export default function HomePage() {
         <div className="text-center space-y-8 max-w-2xl">
           <div className="space-y-4">
             <div className="flex justify-center mb-4">
-              <Image 
-                src="/K.webp" 
-                alt="Logo" 
-                width={320} 
+              <Image
+                src="/K.webp"
+                alt="Logo"
+                width={320}
                 height={320}
                 className="object-contain"
               />
@@ -48,7 +48,7 @@ export default function HomePage() {
               Gestiona tus facturas y rastras de manera eficiente
             </p>
           </div>
-          
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link
               href="/invoices/create"
@@ -59,7 +59,7 @@ export default function HomePage() {
             >
               Crear Factura
             </Link>
-            
+
             <Link
               href="/trucks"
               className="px-8 py-4 bg-neutral-white rounded-lg font-semibold text-lg shadow-lg transition-colors duration-200 transform hover:scale-105 border-2 hover-primary-light"
