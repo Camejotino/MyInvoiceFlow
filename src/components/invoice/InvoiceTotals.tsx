@@ -1,11 +1,13 @@
 "use client";
 
-import { Control, useWatch } from 'react-hook-form';
-import { useMemo } from 'react';
+import { Control, useWatch, UseFormSetValue, UseFormGetValues } from 'react-hook-form';
+import { useMemo, useEffect } from 'react';
 import { Invoice } from './types';
 
 interface InvoiceTotalsProps {
   control: Control<Invoice>;
+  setValue: UseFormSetValue<Invoice>;
+  getValues: UseFormGetValues<Invoice>;
 }
 
 /**
@@ -13,7 +15,7 @@ interface InvoiceTotalsProps {
  * Muestra subtotal, dispatch fee y total final
  * Actualización automática basada en los items
  */
-export default function InvoiceTotals({ control }: InvoiceTotalsProps) {
+export default function InvoiceTotals({ control, setValue, getValues }: InvoiceTotalsProps) {
   const items = useWatch({
     control,
     name: 'items',
@@ -38,12 +40,18 @@ export default function InvoiceTotals({ control }: InvoiceTotalsProps) {
   }, [items]);
 
   /**
-   * Calcula el total final (subtotal + dispatch fee)
+   * Calcula el total final (subtotal - porciento de despacho)
+   * El total es el subtotal menos el dispatch fee (porcentaje) multiplicado por el subtotal
    */
   const total = useMemo(() => {
-    const fee = Number(dispatchFee) || 0;
-    return subtotal + fee;
+    const feePercent = Number(dispatchFee) || 0;
+    const discount = subtotal * (feePercent / 100);
+    return subtotal - discount;
   }, [subtotal, dispatchFee]);
+
+  // No sincronizaremos con el estado del formulario aquí para evitar bucles.
+  // Los totales se calcularán en el onSubmit final del componente padre.
+
 
   /**
    * Formatea un número como moneda
@@ -74,7 +82,7 @@ export default function InvoiceTotals({ control }: InvoiceTotalsProps) {
               Dispatch Fee
             </label>
             <div className="flex items-center gap-2">
-              <span className="text-sm print:hidden" style={{ color: '#74654F' }}>$</span>
+              <span className="text-sm print:hidden" style={{ color: '#74654F' }}>%</span>
               <input
                 type="number"
                 step="0.01"

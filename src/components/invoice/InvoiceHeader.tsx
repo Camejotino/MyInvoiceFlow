@@ -19,8 +19,7 @@ export default function InvoiceHeader({
   register,
   invoiceNumber,
 }: InvoiceHeaderProps) {
-  const date = useWatch({ control, name: "date" });
-  const soldTo = useWatch({ control, name: "soldTo" });
+  // Eliminamos useWatch innecesarios que causaban re-renders
 
   return (
     <div
@@ -79,13 +78,6 @@ export default function InvoiceHeader({
                   e.currentTarget.style.borderColor = "#74654F";
                   e.currentTarget.style.boxShadow = "none";
                 }}
-                defaultValue={
-                  date
-                    ? date instanceof Date
-                      ? date.toISOString().split("T")[0]
-                      : new Date(date).toISOString().split("T")[0]
-                    : new Date().toISOString().split("T")[0]
-                }
               />
             </div>
 

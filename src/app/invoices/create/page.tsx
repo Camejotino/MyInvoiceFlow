@@ -19,20 +19,6 @@ export default function CreateInvoicePage() {
   const router = useRouter();
   const [invoiceNumber, setInvoiceNumber] = useState<string>('...');
 
-  // Obtener el siguiente número de factura al cargar el componente
-  useEffect(() => {
-    async function fetchNextInvoiceNumber() {
-      try {
-        const data = await apiClient.getInvoiceNextNumber();
-        setInvoiceNumber(data.invoiceNumber.toString());
-      } catch (error) {
-        console.error('Error al obtener número de factura:', error);
-        setInvoiceNumber('ERROR');
-      }
-    }
-    fetchNextInvoiceNumber();
-  }, []);
-
   // Inicializar formulario con valores por defecto
   const {
     control,
@@ -41,7 +27,8 @@ export default function CreateInvoicePage() {
     watch,
     setValue,
     reset,
-    formState: { errors },
+    getValues,
+    formState: { errors, isSubmitting },
   } = useForm<Invoice>({
     defaultValues: {
       date: new Date(),
@@ -64,32 +51,26 @@ export default function CreateInvoicePage() {
     },
   });
 
-  // Observar cambios en items para actualizar totales
-  const items = watch('items');
-  const dispatchFee = watch('dispatchFee');
-
-  // Calcular y actualizar subtotal y total automáticamente
+  // Obtener el siguiente número de factura al cargar el componente
   useEffect(() => {
-    if (!items || items.length === 0) {
-      setValue('subtotal', 0);
-      setValue('total', Number(dispatchFee) || 0);
-      return;
+    async function fetchNextInvoiceNumber() {
+      try {
+        const data = await apiClient.getInvoiceNextNumber();
+        const nextNum = data.invoiceNumber.toString();
+        setInvoiceNumber(nextNum);
+        // Actualizar el valor en el formulario inmediatamente
+        setValue('invoiceNumber', nextNum);
+      } catch (error) {
+        console.error('Error al obtener número de factura:', error);
+        setInvoiceNumber('ERROR');
+      }
     }
+    fetchNextInvoiceNumber();
+  }, [setValue]);
 
-    const subtotal = items.reduce((sum, item) => {
-      const quantity = Number(item.quantity) || 0;
-      const rate = Number(item.rate) || 0;
-      const total = quantity * rate;
-
-      return sum + total;
-    }, 0);
-
-    const fee = Number(dispatchFee) || 0;
-    const total = subtotal + fee;
-
-    setValue('subtotal', subtotal);
-    setValue('total', total);
-  }, [items, dispatchFee, setValue]);
+  // No usaremos watch en el componente padre para evitar re-renders masivos
+  // Los cálculos se manejan de forma aislada en sus respectivos componentes
+  // o en un useEffect optimizado
 
   /**
    * Maneja el envío del formulario
@@ -106,31 +87,43 @@ export default function CreateInvoicePage() {
         return;
       }
 
+      // Calcular totales finales antes de enviar
+      const finalSubtotal = validItems.reduce((sum, item) => {
+        return sum + (Number(item.quantity) * Number(item.rate));
+      }, 0);
+      const finalDispatchFeePercent = Number(data.dispatchFee) || 0;
+      const finalTotal = finalSubtotal - (finalSubtotal * (finalDispatchFeePercent / 100));
+
       // Preparar los datos para enviar
       const invoiceData = {
         date: data.date instanceof Date ? data.date.toISOString() : new Date(data.date).toISOString(),
         soldTo: data.soldTo,
-        items: validItems.map(item => ({
-          date: item.date ? (item.date instanceof Date ? item.date.toISOString() : new Date(item.date).toISOString()) : null,
-          truckNumber: item.truckNumber || '',
-          ticketNumber: item.ticketNumber || '',
-          projectName: item.projectName || '',
-          quantity: Number(item.quantity) || 0,
-          rate: Number(item.rate) || 0,
-          total: Number(item.total) || 0,
-        })),
-        subtotal: Number(data.subtotal) || 0,
-        dispatchFee: Number(data.dispatchFee) || 0,
-        total: Number(data.total) || 0,
+        items: validItems.map(item => {
+          const quantity = Number(item.quantity) || 0;
+          const rate = Number(item.rate) || 0;
+          const total = quantity * rate;
+
+          return {
+            date: item.date ? (item.date instanceof Date ? item.date.toISOString() : new Date(item.date).toISOString()) : null,
+            truckNumber: item.truckNumber || '',
+            ticketNumber: item.ticketNumber || '',
+            projectName: item.projectName || '',
+            quantity,
+            rate,
+            total,
+          };
+        }),
+        subtotal: finalSubtotal,
+        dispatchFee: finalDispatchFeePercent,
+        total: finalTotal,
       };
 
       // Guardar en la base de datos
-      const savedInvoice = await apiClient.createInvoice(invoiceData);
-
-      alert('Factura guardada exitosamente');
+      await apiClient.createInvoice(invoiceData);
 
       // Redirigir al historial de facturas
       router.push('/invoices/history');
+
     } catch (error: any) {
       console.error('Error al guardar factura:', error);
       alert(error.message || 'Error al guardar la factura');
@@ -146,7 +139,7 @@ export default function CreateInvoicePage() {
             <h1 className="text-3xl font-bold print:hidden" style={{ color: '#1F1E1D' }}>Crear Factura</h1>
             <p className="mt-1 print:hidden" style={{ color: '#74654F' }}>Complete los datos para generar una nueva factura</p>
           </div>
-          <div className="flex gap-2 print:hidden" style={{ zIndex: 9999, position: 'relative', pointerEvents: 'auto' }}>
+          <div className="flex gap-2 print:hidden">
             <Link
               href="/invoices/history"
               className="px-4 py-2 text-white rounded-lg transition-colors duration-200 no-underline cursor-pointer"
@@ -169,7 +162,7 @@ export default function CreateInvoicePage() {
         </div>
 
         {/* Formulario */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form key={invoiceNumber} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Encabezado de Factura */}
           <InvoiceHeader
             control={control}
@@ -188,7 +181,11 @@ export default function CreateInvoicePage() {
             </div>
             {/* Totales Generales - Derecha */}
             <div className="flex justify-end">
-              <InvoiceTotals control={control} />
+              <InvoiceTotals
+                control={control}
+                setValue={setValue}
+                getValues={getValues}
+              />
             </div>
           </div>
 
@@ -226,7 +223,8 @@ export default function CreateInvoicePage() {
             </button>
             <button
               type="submit"
-              className="px-6 py-3 text-white rounded-lg transition-colors duration-200 font-medium shadow-lg"
+              disabled={isSubmitting}
+              className="px-6 py-3 text-white rounded-lg transition-colors duration-200 font-medium shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: '#F89E1A' }}
               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F3B85E'}
               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#F89E1A'}

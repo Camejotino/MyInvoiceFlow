@@ -49,21 +49,7 @@ export default function InvoiceTable({ control, setValue }: InvoiceTableProps) {
     fetchTrucks();
   }, []);
 
-  // Actualizar totales cuando cambian quantity o rate
-  useEffect(() => {
-    if (!items || items.length === 0) return;
 
-    items.forEach((item, index) => {
-      const quantity = Number(item.quantity) || 0;
-      const rate = Number(item.rate) || 0;
-      const total = quantity * rate;
-
-      // Solo actualizar si el valor cambió para evitar loops infinitos
-      if (item.total !== total) {
-        setValue(`items.${index}.total`, total, { shouldValidate: false });
-      }
-    });
-  }, [items, setValue]);
 
   /**
    * Calcula el total de una fila (quantity * rate)
