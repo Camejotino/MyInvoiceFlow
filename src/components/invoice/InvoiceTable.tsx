@@ -215,9 +215,12 @@ export default function InvoiceTable({ control, setValue }: InvoiceTableProps) {
 
                     {/* Truck # */}
                     <td className="px-3 py-2 border-b" style={{ borderColor: '#ECD8B6' }}>
+                      <div className="hidden print:block text-sm px-2 py-1">
+                        {currentItem?.truckNumber || ''}
+                      </div>
                       <select
                         {...control.register(`items.${index}.truckNumber` as const)}
-                        className="w-full px-2 py-1 text-sm border rounded focus:outline-none bg-white"
+                        className="w-full px-2 py-1 text-sm border rounded focus:outline-none bg-white print:hidden"
                         style={{ borderColor: '#74654F', borderWidth: '1px' }}
                         onFocus={(e) => {
                           e.currentTarget.style.borderColor = '#F89E1A';
