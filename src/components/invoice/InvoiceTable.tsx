@@ -283,6 +283,7 @@ export default function InvoiceTable({ control, setValue }: InvoiceTableProps) {
                         onFocus={(e) => {
                           e.currentTarget.style.borderColor = '#F89E1A';
                           e.currentTarget.style.boxShadow = '0 0 0 1px #F89E1A';
+                          if (e.target.value === '0') e.target.value = '';
                         }}
                         onBlur={(e) => {
                           e.currentTarget.style.borderColor = '#74654F';
@@ -308,6 +309,7 @@ export default function InvoiceTable({ control, setValue }: InvoiceTableProps) {
                         onFocus={(e) => {
                           e.currentTarget.style.borderColor = '#F89E1A';
                           e.currentTarget.style.boxShadow = '0 0 0 1px #F89E1A';
+                          if (e.target.value === '0') e.target.value = '';
                         }}
                         onBlur={(e) => {
                           e.currentTarget.style.borderColor = '#74654F';

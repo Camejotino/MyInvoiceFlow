@@ -98,6 +98,7 @@ export default function InvoiceTotals({ control, setValue, getValues }: InvoiceT
                 onFocus={(e) => {
                   e.currentTarget.style.borderColor = '#F89E1A';
                   e.currentTarget.style.boxShadow = '0 0 0 2px rgba(248, 158, 26, 0.2)';
+                  if (e.target.value === '0') e.target.value = '';
                 }}
                 onBlur={(e) => {
                   e.currentTarget.style.borderColor = '#74654F';
