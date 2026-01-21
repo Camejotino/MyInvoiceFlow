@@ -244,7 +244,7 @@ export default function CreateInvoicePage() {
 
           {/* Mostrar errores si los hay */}
           {Object.keys(errors).length > 0 && (
-            <div className="rounded-lg p-4" style={{ backgroundColor: '#ECD8B6', border: '1px solid #74654F' }}>
+            <div className="rounded-lg p-4 print:hidden" style={{ backgroundColor: '#ECD8B6', border: '1px solid #74654F' }}>
               <p className="font-medium" style={{ color: '#1F1E1D' }}>Por favor, complete todos los campos requeridos</p>
             </div>
           )}
