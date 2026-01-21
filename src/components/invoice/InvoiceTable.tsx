@@ -228,11 +228,13 @@ export default function InvoiceTable({ control, setValue }: InvoiceTableProps) {
                         onKeyDown={(e) => handleKeyDown(e, index)}
                       >
                         <option value="">Selecciona un camión</option>
-                        {trucks.map((truck) => (
-                          <option key={truck.id} value={truck.number}>
-                            {truck.number} - {truck.description}
-                          </option>
-                        ))}
+                        {trucks
+                          .filter(truck => truck.active || truck.number === currentItem?.truckNumber)
+                          .map((truck) => (
+                            <option key={truck.id} value={truck.number}>
+                              {truck.number} - {truck.description}
+                            </option>
+                          ))}
                       </select>
                     </td>
 
