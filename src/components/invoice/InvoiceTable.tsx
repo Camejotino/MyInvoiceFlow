@@ -75,6 +75,10 @@ export default function InvoiceTable({ control, setValue }: InvoiceTableProps) {
    * Agrega una nueva fila vacía
    */
   const handleAddRow = () => {
+    if (fields.length >= 20) {
+      alert('Se ha alcanzado el límite máximo de 20 filas, haga otra factura');
+      return;
+    }
     append({
       date: null,
       truckNumber: '',
@@ -118,10 +122,15 @@ export default function InvoiceTable({ control, setValue }: InvoiceTableProps) {
         <button
           type="button"
           onClick={handleAddRow}
-          className="px-4 py-2 text-white rounded-md transition-colors duration-200 flex items-center gap-2 "
-          style={{ backgroundColor: '#F89E1A' }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F3B85E'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#F89E1A'}
+          disabled={fields.length >= 21}
+          className="px-4 py-2 text-white rounded-md transition-colors duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{ backgroundColor: fields.length >= 21 ? '#74654F' : '#F89E1A' }}
+          onMouseEnter={(e) => {
+            if (fields.length < 21) e.currentTarget.style.backgroundColor = '#F3B85E';
+          }}
+          onMouseLeave={(e) => {
+            if (fields.length < 21) e.currentTarget.style.backgroundColor = '#F89E1A';
+          }}
         >
           <svg
             className="w-4 h-4"
@@ -136,7 +145,7 @@ export default function InvoiceTable({ control, setValue }: InvoiceTableProps) {
               d="M12 4v16m8-8H4"
             />
           </svg>
-          Add Row
+          Add Row {fields.length >= 21 && '(Max)'}
         </button>
       </div>
 
