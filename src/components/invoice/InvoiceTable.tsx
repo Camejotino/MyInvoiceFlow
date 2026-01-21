@@ -24,7 +24,7 @@ interface InvoiceTableProps {
 export default function InvoiceTable({ control, setValue }: InvoiceTableProps) {
   const [trucks, setTrucks] = useState<Truck[]>([]);
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, insert } = useFieldArray({
     control,
     name: 'items',
   });
@@ -91,6 +91,28 @@ export default function InvoiceTable({ control, setValue }: InvoiceTableProps) {
   };
 
   /**
+   * Duplica una fila existente copiando campos seleccionados
+   */
+  const handleDuplicateRow = (index: number) => {
+    if (fields.length >= 20) {
+      alert('Se ha alcanzado el límite máximo de 20 filas');
+      return;
+    }
+
+    const rowToCopy = items?.[index] || fields[index];
+
+    insert(index + 1, {
+      date: null,
+      truckNumber: rowToCopy.truckNumber || '',
+      ticketNumber: '',
+      projectName: rowToCopy.projectName || '',
+      quantity: 0,
+      rate: rowToCopy.rate || 0,
+      total: 0,
+    });
+  };
+
+  /**
    * Maneja la eliminación de una fila
    */
   const handleRemoveRow = (index: number) => {
@@ -124,12 +146,12 @@ export default function InvoiceTable({ control, setValue }: InvoiceTableProps) {
           onClick={handleAddRow}
           disabled={fields.length >= 21}
           className="px-4 py-2 text-white rounded-md transition-colors duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{ backgroundColor: fields.length >= 21 ? '#74654F' : '#F89E1A' }}
+          style={{ backgroundColor: fields.length >= 20 ? '#74654F' : '#F89E1A' }}
           onMouseEnter={(e) => {
-            if (fields.length < 21) e.currentTarget.style.backgroundColor = '#F3B85E';
+            if (fields.length < 20) e.currentTarget.style.backgroundColor = '#F3B85E';
           }}
           onMouseLeave={(e) => {
-            if (fields.length < 21) e.currentTarget.style.backgroundColor = '#F89E1A';
+            if (fields.length < 20) e.currentTarget.style.backgroundColor = '#F89E1A';
           }}
         >
           <svg
@@ -145,7 +167,7 @@ export default function InvoiceTable({ control, setValue }: InvoiceTableProps) {
               d="M12 4v16m8-8H4"
             />
           </svg>
-          Add Row {fields.length >= 21 && '(Max)'}
+          Add Row {fields.length >= 20 && '(Max)'}
         </button>
       </div>
 
@@ -346,31 +368,58 @@ export default function InvoiceTable({ control, setValue }: InvoiceTableProps) {
 
                     {/* Acciones */}
                     <td className="px-3 py-2 border-b text-center print:hidden" style={{ borderColor: '#ECD8B6' }}>
-                      {fields.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveRow(index)}
-                          className="transition-colors"
-                          style={{ color: '#74654F' }}
-                          onMouseEnter={(e) => e.currentTarget.style.color = '#1F1E1D'}
-                          onMouseLeave={(e) => e.currentTarget.style.color = '#74654F'}
-                          title="Eliminar fila"
-                        >
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
+                      <div className="flex items-center justify-center gap-2">
+                        {fields.length < 20 && (
+                          <button
+                            type="button"
+                            onClick={() => handleDuplicateRow(index)}
+                            className="transition-colors"
+                            style={{ color: '#F89E1A' }}
+                            onMouseEnter={(e) => e.currentTarget.style.color = '#F3B85E'}
+                            onMouseLeave={(e) => e.currentTarget.style.color = '#F89E1A'}
+                            title="Duplicar fila (Truck, Project, Rate)"
                           >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                            />
-                          </svg>
-                        </button>
-                      )}
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"
+                              />
+                            </svg>
+                          </button>
+                        )}
+                        {fields.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveRow(index)}
+                            className="transition-colors"
+                            style={{ color: '#74654F' }}
+                            onMouseEnter={(e) => e.currentTarget.style.color = '#1F1E1D'}
+                            onMouseLeave={(e) => e.currentTarget.style.color = '#74654F'}
+                            title="Eliminar fila"
+                          >
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
