@@ -65,6 +65,11 @@ body,
     background: white;
   }
 
+  /* Ajuste solicitado: margen superior negativo para el encabezado */
+  .invoice-header-print {
+    margin-top: -40px !important;
+  }
+
   /* HEADER------------------------------------------------------------------------------------------------------------- */
   /* Reducir inputs SOLO en impresión */
   .invoice-header-print input {
@@ -213,6 +218,7 @@ body,
     padding: 0 !important;
     border: none !important;
     box-shadow: none !important;
+    margin-top: -40px !important;
   }
 
   /* Convertir columna en fila */
