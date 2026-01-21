@@ -1,41 +1,50 @@
 "use client";
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import type { Truck } from '@prisma/client';
 import { apiClient } from '@/lib/api-client';
 
 interface NewTruckModalProps {
   onClose: () => void;
   onSave: () => void;
+  truck?: Truck | null;
 }
 
-export default function NewTruckModal({ onClose, onSave }: NewTruckModalProps) {
-  const router = useRouter();
-  const [number, setNumber] = useState('');
-  const [description, setDescription] = useState('');
-  const [active, setActive] = useState(true);
+export default function NewTruckModal({ onClose, onSave, truck }: NewTruckModalProps) {
+  const [number, setNumber] = useState(truck?.number || '');
+  const [description, setDescription] = useState(truck?.description || '');
+  const [active, setActive] = useState(truck ? truck.active : true);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const isEditing = !!truck;
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setLoading(true);
     try {
-      await apiClient.createTruck({ number, description, active });
+      if (isEditing && truck) {
+        await apiClient.updateTruck(truck.id, { number, description, active });
+      } else {
+        await apiClient.createTruck({ number, description, active });
+      }
       onSave(); // Call onSave to refresh the truck list
       onClose(); // Close the modal
     } catch (err: any) {
-      setError(err.message || 'Error al crear');
+      setError(err.message || 'Error al guardar');
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center">
-      <div className="p-6 max-w-xl bg-white rounded-lg shadow-xl">
-        <h1 className="text-xl font-semibold mb-4" style={{ color: '#1F1E1D' }}>Nuevo Camión</h1>
-        {error && <div className="mb-3" style={{ color: '#74654F' }}>{error}</div>}
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center z-50">
+      <div className="p-6 max-w-xl w-full mx-4 bg-white rounded-lg shadow-xl">
+        <h1 className="text-xl font-semibold mb-4" style={{ color: '#1F1E1D' }}>
+          {isEditing ? 'Editar Camión' : 'Nuevo Camión'}
+        </h1>
+        {error && <div className="mb-3 text-red-600">{error}</div>}
         <div className="rounded-lg shadow-sm p-6" style={{ backgroundColor: '#FEFEFE', border: '1px solid #74654F' }}>
           <form onSubmit={onSubmit} className="space-y-3">
             <div>
@@ -86,7 +95,7 @@ export default function NewTruckModal({ onClose, onSave }: NewTruckModalProps) {
                 onMouseLeave={(e) => !e.currentTarget.disabled && (e.currentTarget.style.backgroundColor = '#F89E1A')}
                 type="submit"
               >
-                {loading ? 'Guardando...' : 'Guardar'}
+                {loading ? 'Guardando...' : (isEditing ? 'Actualizar' : 'Guardar')}
               </button>
               <button
                 type="button"
