@@ -1,6 +1,6 @@
 "use client";
 
-import { useFieldArray, Control, useWatch, UseFormSetValue } from 'react-hook-form';
+import { useFieldArray, Control, useWatch, UseFormSetValue, UseFormGetValues, Controller } from 'react-hook-form';
 import { useEffect, useState } from 'react';
 import { Invoice, InvoiceRow } from './types';
 import { apiClient } from '@/lib/api-client';
@@ -15,13 +15,14 @@ type Truck = {
 interface InvoiceTableProps {
   control: Control<Invoice>;
   setValue: UseFormSetValue<Invoice>;
+  getValues: UseFormGetValues<Invoice>;
 }
 
 /**
  * Componente de tabla editable para los detalles de la factura
  * Permite agregar/eliminar filas y calcula automáticamente los totales
  */
-export default function InvoiceTable({ control, setValue }: InvoiceTableProps) {
+export default function InvoiceTable({ control, setValue, getValues }: InvoiceTableProps) {
   const [trucks, setTrucks] = useState<Truck[]>([]);
 
   const { fields, append, remove, insert } = useFieldArray({
@@ -99,10 +100,11 @@ export default function InvoiceTable({ control, setValue }: InvoiceTableProps) {
       return;
     }
 
-    const rowToCopy = items?.[index] || fields[index];
+    const currentItems = getValues().items;
+    const rowToCopy = currentItems[index];
 
     insert(index + 1, {
-      date: null,
+      date: rowToCopy.date ? new Date(rowToCopy.date) : null,
       truckNumber: rowToCopy.truckNumber || '',
       ticketNumber: '',
       projectName: rowToCopy.projectName || '',
@@ -211,22 +213,32 @@ export default function InvoiceTable({ control, setValue }: InvoiceTableProps) {
                   <tr key={field.id} style={{ backgroundColor: '#FEFEFE' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#ECD8B6'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FEFEFE'}>
                     {/* Date */}
                     <td className="px-3 py-2 border-b" style={{ borderColor: '#ECD8B6' }}>
-                      <input
-                        type="date"
-                        {...control.register(`items.${index}.date` as const, {
-                          valueAsDate: true,
-                        })}
-                        className="w-full px-2 py-1 text-sm border rounded focus:outline-none"
-                        style={{ borderColor: '#74654F', borderWidth: '1px' }}
-                        onFocus={(e) => {
-                          e.currentTarget.style.borderColor = '#F89E1A';
-                          e.currentTarget.style.boxShadow = '0 0 0 1px #F89E1A';
-                        }}
-                        onBlur={(e) => {
-                          e.currentTarget.style.borderColor = '#74654F';
-                          e.currentTarget.style.boxShadow = 'none';
-                        }}
-                        onKeyDown={(e) => handleKeyDown(e, index)}
+                      <Controller
+                        control={control}
+                        name={`items.${index}.date`}
+                        render={({ field: { value, onChange, onBlur, ref } }) => (
+                          <input
+                            type="date"
+                            ref={ref}
+                            value={value && value instanceof Date ? value.toISOString().split('T')[0] : (typeof value === 'string' ? (value as string).split('T')[0] : '')}
+                            onChange={(e) => {
+                              // Ensure we save a proper Date object (or null)
+                              onChange(e.target.valueAsDate);
+                            }}
+                            onBlur={(e) => {
+                              onBlur();
+                              e.currentTarget.style.borderColor = '#74654F';
+                              e.currentTarget.style.boxShadow = 'none';
+                            }}
+                            className="w-full px-2 py-1 text-sm border rounded focus:outline-none"
+                            style={{ borderColor: '#74654F', borderWidth: '1px' }}
+                            onFocus={(e) => {
+                              e.currentTarget.style.borderColor = '#F89E1A';
+                              e.currentTarget.style.boxShadow = '0 0 0 1px #F89E1A';
+                            }}
+                            onKeyDown={(e) => handleKeyDown(e, index)}
+                          />
+                        )}
                       />
                     </td>
 
@@ -377,7 +389,7 @@ export default function InvoiceTable({ control, setValue }: InvoiceTableProps) {
                             style={{ color: '#F89E1A' }}
                             onMouseEnter={(e) => e.currentTarget.style.color = '#F3B85E'}
                             onMouseLeave={(e) => e.currentTarget.style.color = '#F89E1A'}
-                            title="Duplicar fila (Truck, Project, Rate)"
+                            title="Duplicar fila (Date, Truck, Project, Rate)"
                           >
                             <svg
                               className="w-5 h-5"

@@ -35,7 +35,7 @@ export default function CreateInvoicePage() {
       soldTo: '',
       invoiceNumber: invoiceNumber,
       items: Array(5).fill({
-        date: new Date(),
+        date: null,
         truckNumber: '',
         ticketNumber: '',
         projectName: '',
@@ -169,7 +169,7 @@ export default function CreateInvoicePage() {
           />
 
           {/* Tabla de Detalles */}
-          <InvoiceTable control={control} setValue={setValue} />
+          <InvoiceTable control={control} setValue={setValue} getValues={getValues} />
 
           {/* Resumen de Totales - Layout de dos columnas */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -197,7 +197,7 @@ export default function CreateInvoicePage() {
                   soldTo: '',
                   invoiceNumber: invoiceNumber,
                   items: Array(5).fill({
-                    date: new Date(),
+                    date: null,
                     truckNumber: '',
                     ticketNumber: '',
                     projectName: '',

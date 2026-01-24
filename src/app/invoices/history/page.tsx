@@ -371,7 +371,7 @@ export default function InvoiceHistoryPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right">
                           <div className="text-sm" style={{ color: '#74654F' }}>
-                            {formatCurrency(Number(invoice.dispatchFee))}
+                            {invoice.dispatchFee}%
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right">

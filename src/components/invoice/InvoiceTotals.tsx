@@ -82,7 +82,7 @@ export default function InvoiceTotals({ control, setValue, getValues }: InvoiceT
               Dispatch Fee
             </label>
             <div className="flex items-center gap-2">
-              <span className="text-sm print:hidden" style={{ color: '#74654F' }}>%</span>
+              <span className="text-sm" style={{ color: '#74654F' }}>%</span>
               <input
                 type="number"
                 step="0.01"
