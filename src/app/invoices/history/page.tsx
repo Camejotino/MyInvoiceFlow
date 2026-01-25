@@ -92,6 +92,7 @@ export default function InvoiceHistoryPage() {
    */
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
+    date.setDate(date.getDate() + 1);
     return date.toLocaleDateString('es-ES', {
       year: 'numeric',
       month: 'short',
