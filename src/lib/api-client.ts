@@ -31,6 +31,31 @@ class ApiClient implements IpcApi {
         return res.json();
     }
 
+    async getInvoiceById(id: number): Promise<any> {
+        if (this.isElectron) {
+            return window.api.getInvoiceById(id);
+        }
+        const res = await fetch(`/api/invoices/${id}`);
+        if (!res.ok) throw new Error('Failed to get invoice');
+        return res.json();
+    }
+
+    async updateInvoice(id: number, data: any): Promise<any> {
+        if (this.isElectron) {
+            return window.api.updateInvoice(id, data);
+        }
+        const res = await fetch(`/api/invoices/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+        if (!res.ok) {
+            const error = await res.json();
+            throw new Error(error.message || 'Failed to update invoice');
+        }
+        return res.json();
+    }
+
     async deleteInvoice(id: number): Promise<any> {
         if (this.isElectron) {
             return window.api.deleteInvoice(id);

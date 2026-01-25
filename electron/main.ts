@@ -272,6 +272,76 @@ ipcMain.handle('invoices:create', async (_, data) => {
   }
 });
 
+// Invoices: Get by ID
+ipcMain.handle('invoices:get', async (_, id) => {
+  try {
+    const invoice = await prisma.invoice.findUnique({
+      where: { id },
+      include: { items: true },
+    });
+    if (!invoice) throw new Error('Factura no encontrada');
+    return JSON.parse(JSON.stringify(invoice));
+  } catch (error) {
+    console.error('Error fetching invoice:', error);
+    throw error;
+  }
+});
+
+// Invoices: Update
+ipcMain.handle('invoices:update', async (_, id, data) => {
+  try {
+    const { date, soldTo, items, subtotal, dispatchFee, total } = data;
+
+    // Basic validation
+    if (!date) throw new Error('date requerido');
+    if (!soldTo) throw new Error('soldTo requerido');
+    if (!items || !items.length) throw new Error('items requerido');
+
+    // Check if invoice exists
+    const existingInvoice = await prisma.invoice.findUnique({ where: { id } });
+    if (!existingInvoice) throw new Error('Factura no encontrada');
+
+    // Update invoice with transaction
+    const invoice = await prisma.$transaction(async (tx: any) => {
+      // Delete existing items
+      await tx.invoiceRowItem.deleteMany({
+        where: { invoiceId: id },
+      });
+
+      // Update invoice with new items
+      const updatedInvoice = await tx.invoice.update({
+        where: { id },
+        data: {
+          date: new Date(date),
+          soldTo,
+          subtotal: new Prisma.Decimal(subtotal || 0),
+          dispatchFee: new Prisma.Decimal(dispatchFee || 0),
+          total: new Prisma.Decimal(total || 0),
+          items: {
+            create: items.map((item: any) => ({
+              date: item.date ? new Date(item.date) : null,
+              truckNumber: item.truckNumber || '',
+              ticketNumber: item.ticketNumber || '',
+              projectName: item.projectName || '',
+              quantity: new Prisma.Decimal(item.quantity || 0),
+              rate: new Prisma.Decimal(item.rate || 0),
+              total: new Prisma.Decimal(item.total || 0),
+            })),
+          },
+        },
+        include: { items: true },
+      });
+
+      return updatedInvoice;
+    });
+
+    return JSON.parse(JSON.stringify(invoice));
+  } catch (error: any) {
+    console.error('Error updating invoice:', error);
+    throw error;
+  }
+});
+
 // Invoices: Delete
 ipcMain.handle('invoices:delete', async (_, id) => {
   try {

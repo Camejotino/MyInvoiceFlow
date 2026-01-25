@@ -4,6 +4,8 @@ contextBridge.exposeInMainWorld('api', {
     // Invoices
     getInvoiceNextNumber: () => ipcRenderer.invoke('invoices:next-number'),
     createInvoice: (data: any) => ipcRenderer.invoke('invoices:create', data),
+    getInvoiceById: (id: number) => ipcRenderer.invoke('invoices:get', id),
+    updateInvoice: (id: number, data: any) => ipcRenderer.invoke('invoices:update', id, data),
     deleteInvoice: (id: number) => ipcRenderer.invoke('invoices:delete', id),
     searchInvoices: (params: any) => ipcRenderer.invoke('invoices:list', params),
 

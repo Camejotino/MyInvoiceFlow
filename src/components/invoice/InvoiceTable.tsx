@@ -42,6 +42,7 @@ export default function InvoiceTable({ control, setValue, getValues }: InvoiceTa
       try {
         // Use apiClient to handle both Web and Electron (IPC) environments
         const data = await apiClient.searchTrucks({ pageSize: 1000 });
+        console.log('Trucks loaded:', data.items);
         setTrucks(data.items || []);
       } catch (error) {
         console.error('Error fetching trucks:', error);
@@ -50,6 +51,12 @@ export default function InvoiceTable({ control, setValue, getValues }: InvoiceTa
     fetchTrucks();
   }, []);
 
+  // Debug: log items when they change
+  useEffect(() => {
+    if (items && items.length > 0) {
+      console.log('Current items in InvoiceTable:', items);
+    }
+  }, [items]);
 
 
   /**
@@ -247,29 +254,36 @@ export default function InvoiceTable({ control, setValue, getValues }: InvoiceTa
                       <div className="hidden print:block text-sm px-2 py-1">
                         {currentItem?.truckNumber || ''}
                       </div>
-                      <select
-                        {...control.register(`items.${index}.truckNumber` as const)}
-                        className="w-full px-2 py-1 text-sm border rounded focus:outline-none bg-white print:hidden"
-                        style={{ borderColor: '#74654F', borderWidth: '1px' }}
-                        onFocus={(e) => {
-                          e.currentTarget.style.borderColor = '#F89E1A';
-                          e.currentTarget.style.boxShadow = '0 0 0 1px #F89E1A';
-                        }}
-                        onBlur={(e) => {
-                          e.currentTarget.style.borderColor = '#74654F';
-                          e.currentTarget.style.boxShadow = 'none';
-                        }}
-                        onKeyDown={(e) => handleKeyDown(e, index)}
-                      >
-                        <option value="">Selecciona un camión</option>
-                        {trucks
-                          .filter(truck => truck.active || truck.number === currentItem?.truckNumber)
-                          .map((truck) => (
-                            <option key={truck.id} value={truck.number}>
-                              {truck.number} - {truck.description}
-                            </option>
-                          ))}
-                      </select>
+                      <Controller
+                        control={control}
+                        name={`items.${index}.truckNumber`}
+                        render={({ field }) => (
+                          <select
+                            {...field}
+                            className="w-full px-2 py-1 text-sm border rounded focus:outline-none bg-white print:hidden"
+                            style={{ borderColor: '#74654F', borderWidth: '1px' }}
+                            onFocus={(e) => {
+                              e.currentTarget.style.borderColor = '#F89E1A';
+                              e.currentTarget.style.boxShadow = '0 0 0 1px #F89E1A';
+                            }}
+                            onBlur={(e) => {
+                              field.onBlur();
+                              e.currentTarget.style.borderColor = '#74654F';
+                              e.currentTarget.style.boxShadow = 'none';
+                            }}
+                            onKeyDown={(e) => handleKeyDown(e, index)}
+                          >
+                            <option value="">Selecciona un camión</option>
+                            {trucks
+                              .filter(truck => truck.active || truck.number === field.value)
+                              .map((truck) => (
+                                <option key={truck.id} value={truck.number}>
+                                  {truck.number} - {truck.description}
+                                </option>
+                              ))}
+                          </select>
+                        )}
+                      />
                     </td>
 
                     {/* Ticket # */}

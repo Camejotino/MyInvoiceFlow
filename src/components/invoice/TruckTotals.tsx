@@ -85,7 +85,7 @@ export default function TruckTotals({ control }: TruckTotalsProps) {
     }
 
     return (
-        <div className="rounded-lg shadow-sm p-6 print:hidden" style={{ backgroundColor: '#FEFEFE', border: '1px solid #74654F' }}>
+        <div className="rounded-lg shadow-sm p-6 " style={{ backgroundColor: '#FEFEFE', border: '1px solid #74654F' }}>
             <h3 className="text-lg font-semibold mb-4" style={{ color: '#1F1E1D' }}>
                 Totales por Camión
             </h3>

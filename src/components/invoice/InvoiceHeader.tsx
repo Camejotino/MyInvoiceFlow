@@ -1,6 +1,6 @@
 "use client";
 
-import { Control, useWatch, UseFormRegister } from "react-hook-form";
+import { Control, useWatch, UseFormRegister, Controller } from "react-hook-form";
 import { Invoice } from "./types";
 import Image from "next/image";
 
@@ -64,20 +64,31 @@ export default function InvoiceHeader({
               >
                 Date
               </label>
-              <input
-                type="date"
-                {...register("date", { required: true, valueAsDate: true })}
-                className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none"
-                style={{ borderColor: "#74654F", borderWidth: "1px" }}
-                onFocus={(e) => {
-                  e.currentTarget.style.borderColor = "#F89E1A";
-                  e.currentTarget.style.boxShadow =
-                    "0 0 0 2px rgba(248, 158, 26, 0.2)";
-                }}
-                onBlur={(e) => {
-                  e.currentTarget.style.borderColor = "#74654F";
-                  e.currentTarget.style.boxShadow = "none";
-                }}
+              <Controller
+                control={control}
+                name="date"
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <input
+                    type="date"
+                    value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : (field.value ? String(field.value).split('T')[0] : '')}
+                    onChange={(e) => {
+                      field.onChange(e.target.valueAsDate);
+                    }}
+                    className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none"
+                    style={{ borderColor: "#74654F", borderWidth: "1px" }}
+                    onFocus={(e) => {
+                      e.currentTarget.style.borderColor = "#F89E1A";
+                      e.currentTarget.style.boxShadow =
+                        "0 0 0 2px rgba(248, 158, 26, 0.2)";
+                    }}
+                    onBlur={(e) => {
+                      field.onBlur();
+                      e.currentTarget.style.borderColor = "#74654F";
+                      e.currentTarget.style.boxShadow = "none";
+                    }}
+                  />
+                )}
               />
             </div>
 
