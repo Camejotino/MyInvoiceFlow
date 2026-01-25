@@ -1,5 +1,6 @@
 import './globals.css'
 import type { Metadata } from 'next'
+import { ToastProvider } from '@/context/ToastContext'
 
 export const metadata: Metadata = {
   title: 'MyInvoiceFlow',
@@ -12,7 +13,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <base href="./" />
       </head>
-      <body>{children}</body>
+      <body>
+        <ToastProvider>
+          {children}
+        </ToastProvider>
+      </body>
     </html>
   )
 }

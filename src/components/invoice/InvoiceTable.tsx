@@ -4,6 +4,7 @@ import { useFieldArray, Control, useWatch, UseFormSetValue, UseFormGetValues, Co
 import { useEffect, useState } from 'react';
 import { Invoice, InvoiceRow } from './types';
 import { apiClient } from '@/lib/api-client';
+import { useToast } from '@/context/ToastContext';
 
 type Truck = {
   id: number;
@@ -24,6 +25,7 @@ interface InvoiceTableProps {
  */
 export default function InvoiceTable({ control, setValue, getValues }: InvoiceTableProps) {
   const [trucks, setTrucks] = useState<Truck[]>([]);
+  const toast = useToast();
 
   const { fields, append, remove, insert } = useFieldArray({
     control,
@@ -54,7 +56,6 @@ export default function InvoiceTable({ control, setValue, getValues }: InvoiceTa
   // Debug: log items when they change
   useEffect(() => {
     if (items && items.length > 0) {
-      console.log('Current items in InvoiceTable:', items);
     }
   }, [items]);
 
@@ -84,7 +85,7 @@ export default function InvoiceTable({ control, setValue, getValues }: InvoiceTa
    */
   const handleAddRow = () => {
     if (fields.length >= 20) {
-      alert('Se ha alcanzado el límite máximo de 20 filas, haga otra factura');
+      toast.error('Se ha alcanzado el límite máximo de 20 filas, haga otra factura');
       return;
     }
     append({
@@ -103,7 +104,7 @@ export default function InvoiceTable({ control, setValue, getValues }: InvoiceTa
    */
   const handleDuplicateRow = (index: number) => {
     if (fields.length >= 20) {
-      alert('Se ha alcanzado el límite máximo de 20 filas');
+      toast.error('Se ha alcanzado el límite máximo de 20 filas');
       return;
     }
 

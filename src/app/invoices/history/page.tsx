@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiClient } from '@/lib/api-client';
+import { useToast } from '@/context/ToastContext';
 
 interface InvoiceRowItem {
   id: number;
@@ -34,6 +35,7 @@ interface Invoice {
  */
 export default function InvoiceHistoryPage() {
   const router = useRouter();
+  const toast = useToast();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -78,10 +80,10 @@ export default function InvoiceHistoryPage() {
 
       // Recargar la lista
       await loadInvoices();
-      alert('Factura eliminada exitosamente');
+      toast.success('Factura eliminada exitosamente');
     } catch (err: any) {
       console.error('Error al eliminar factura:', err);
-      alert(err.message || 'Error al eliminar factura');
+      toast.error(err.message || 'Error al eliminar factura');
     } finally {
       setDeletingId(null);
     }
@@ -92,7 +94,7 @@ export default function InvoiceHistoryPage() {
    */
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    date.setDate(date.getDate() + 1);
+    date.setDate(date.getDate() + 0);
     return date.toLocaleDateString('es-ES', {
       year: 'numeric',
       month: 'short',

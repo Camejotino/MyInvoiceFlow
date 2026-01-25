@@ -10,6 +10,7 @@ import InvoiceTable from '@/components/invoice/InvoiceTable';
 import InvoiceTotals from '@/components/invoice/InvoiceTotals';
 import TruckTotals from '@/components/invoice/TruckTotals';
 import { apiClient } from '@/lib/api-client';
+import { useToast } from '@/context/ToastContext';
 
 /**
  * Componente interno que contiene la lógica de edición
@@ -19,6 +20,7 @@ function EditInvoiceContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const invoiceId = searchParams.get('id');
+    const toast = useToast();
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -134,7 +136,7 @@ function EditInvoiceContent() {
     const onSubmit = async (data: Invoice) => {
         try {
             if (!invoiceId) {
-                alert('Error: No se puede actualizar sin un ID de factura');
+                toast.error('Error: No se puede actualizar sin un ID de factura');
                 return;
             }
 
@@ -144,7 +146,7 @@ function EditInvoiceContent() {
             );
 
             if (validItems.length === 0) {
-                alert('Por favor, agregue al menos un item a la factura');
+                toast.error('Por favor, agregue al menos un item a la factura');
                 return;
             }
 
@@ -187,7 +189,7 @@ function EditInvoiceContent() {
 
         } catch (error: any) {
             console.error('Error al actualizar factura:', error);
-            alert(error.message || 'Error al actualizar la factura');
+            toast.error(error.message || 'Error al actualizar la factura');
         }
     };
 

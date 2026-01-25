@@ -10,6 +10,7 @@ import InvoiceTable from '@/components/invoice/InvoiceTable';
 import InvoiceTotals from '@/components/invoice/InvoiceTotals';
 import TruckTotals from '@/components/invoice/TruckTotals';
 import { apiClient } from '@/lib/api-client';
+import { useToast } from '@/context/ToastContext';
 
 /**
  * Página de creación de facturas
@@ -17,6 +18,7 @@ import { apiClient } from '@/lib/api-client';
  */
 export default function CreateInvoicePage() {
   const router = useRouter();
+  const toast = useToast();
   const [invoiceNumber, setInvoiceNumber] = useState<string>('...');
 
   // Inicializar formulario con valores por defecto
@@ -81,7 +83,7 @@ export default function CreateInvoicePage() {
       );
 
       if (validItems.length === 0) {
-        alert('Por favor, agregue al menos un item a la factura');
+        toast.error('Por favor, agregue al menos un item a la factura');
         return;
       }
 
@@ -124,7 +126,7 @@ export default function CreateInvoicePage() {
 
     } catch (error: any) {
       console.error('Error al guardar factura:', error);
-      alert(error.message || 'Error al guardar la factura');
+      toast.error(error.message || 'Error al guardar la factura');
     }
   };
 
