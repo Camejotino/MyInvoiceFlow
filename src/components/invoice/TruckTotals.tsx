@@ -85,30 +85,32 @@ export default function TruckTotals({ control }: TruckTotalsProps) {
     }
 
     return (
-        <div className="rounded-lg shadow-sm p-6 " style={{ backgroundColor: '#FEFEFE', border: '1px solid #74654F' }}>
-            <h3 className="text-lg font-semibold mb-4" style={{ color: '#1F1E1D' }}>
+        <div className="rounded-lg shadow-sm p-6 truck-totals" style={{ backgroundColor: '#FEFEFE', border: '1px solid #74654F' }}>
+            <h3 className="text-lg font-semibold mb-4 print:hidden" style={{ color: '#1F1E1D' }}>
                 Totales por Camión
             </h3>
-            <div className="space-y-2">
-                {truckTotals.map(({ truckNumber, total }) => {
-                    const truck = trucks.find(t => t.number === truckNumber);
-                    const description = truck?.description || '';
+            <div className="flex justify-end">
+                <div className="w-full max-w-md space-y-2 truck-totals-inner">
+                    {truckTotals.map(({ truckNumber, total }) => {
+                        const truck = trucks.find(t => t.number === truckNumber);
+                        const description = truck?.description || '';
 
-                    return (
-                        <div
-                            key={truckNumber}
-                            className="flex justify-between items-center py-2 px-4 rounded-md"
-                            style={{ backgroundColor: '#ECD8B6' }}
-                        >
-                            <span className="text-sm font-medium" style={{ color: '#1F1E1D' }}>
-                                Camión {truckNumber} {description ? `- ${description}` : ''}
-                            </span>
-                            <span className="text-sm font-semibold text-right" style={{ color: '#1F1E1D' }}>
-                                {formatCurrency(total)}
-                            </span>
-                        </div>
-                    );
-                })}
+                        return (
+                            <div
+                                key={truckNumber}
+                                className="flex justify-between items-center py-2 px-4 rounded-md truck-total-item"
+                                style={{ backgroundColor: '#ECD8B6' }}
+                            >
+                                <span className="text-sm font-medium" style={{ color: '#1F1E1D' }}>
+                                    Camión {truckNumber} {description ? `- ${description}` : ''}
+                                </span>
+                                <span className="text-sm font-semibold text-right" style={{ color: '#1F1E1D' }}>
+                                    {formatCurrency(total)}
+                                </span>
+                            </div>
+                        );
+                    })}
+                </div>
             </div>
         </div>
     );
