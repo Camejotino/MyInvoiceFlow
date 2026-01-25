@@ -89,8 +89,8 @@ export default function TruckTotals({ control }: TruckTotalsProps) {
             <h3 className="text-lg font-semibold mb-4 print:hidden" style={{ color: '#1F1E1D' }}>
                 Totales por Camión
             </h3>
-            <div className="flex justify-end">
-                <div className="w-full max-w-md space-y-2 truck-totals-inner">
+            <div className="flex print:justify-end">
+                <div className="w-full print:max-w-md space-y-2 truck-totals-inner">
                     {truckTotals.map(({ truckNumber, total }) => {
                         const truck = trucks.find(t => t.number === truckNumber);
                         const description = truck?.description || '';

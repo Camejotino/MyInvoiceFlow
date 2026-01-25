@@ -23,13 +23,13 @@ export default function InvoiceHeader({
 
   return (
     <div
-      className="rounded-lg shadow-sm p-6 mb-6 invoice-header-print"
+      className="rounded-lg shadow-sm p-2 mb-2 invoice-header-print"
       style={{ backgroundColor: "#FEFEFE", border: "1px solid #74654F" }}
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {/* Columna Izquierda - Datos de Empresa */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
             {/* Logo */}
             <div className="w-16 h-16 rounded-lg flex items-center justify-center overflow-hidden">
               <Image
@@ -47,19 +47,19 @@ export default function InvoiceHeader({
             </div>
           </div>
 
-          <div className="space-y-1 text-sm" style={{ color: "#74654F" }}>
+          <div className="space-y-0 text-sm" style={{ color: "#74654F" }}>
             <p> 2301 W Shandon Ave Midland TX </p>
             <p>Tel: (432) 453-06118 </p>
           </div>
         </div>
 
         {/* Columna Derecha - Datos de Factura */}
-        <div className="space-y-4 invoice-header-right">
-          <div className="flex flex-col md:flex-row md:items-end md:gap-4 gap-4">
+        <div className="space-y-1 invoice-header-right">
+          <div className="flex flex-col md:flex-row md:items-center md:gap-2 gap-2">
             {/* Date */}
             <div className="w-full md:w-40 invoice-field">
               <label
-                className="block text-sm font-medium mb-1"
+                className="block text-sm font-medium mb-0.5"
                 style={{ color: "#1F1E1D" }}
               >
                 Date
@@ -95,7 +95,7 @@ export default function InvoiceHeader({
             {/* Sold To */}
             <div className="w-full md:flex-1 invoice-field">
               <label
-                className="block text-sm font-medium mb-1"
+                className="block text-sm font-medium mb-0.5"
                 style={{ color: "#1F1E1D" }}
               >
                 Sold To
@@ -121,7 +121,7 @@ export default function InvoiceHeader({
             {/* Invoice # */}
             <div className="w-full md:w-36 invoice-field">
               <label
-                className="block text-sm font-medium mb-1"
+                className="block text-sm font-medium mb-0.5"
                 style={{ color: "#1F1E1D" }}
               >
                 Invoice #

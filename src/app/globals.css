@@ -218,14 +218,14 @@ body,
     padding: 0 !important;
     border: none !important;
     box-shadow: none !important;
-    margin-top: 10px !important;
+    margin-top: -20px !important;
   }
 
   /* Convertir columna en fila */
   .invoice-totals-inner {
     display: flex !important;
     flex-direction: row !important;
-    gap: 16px !important;
+    gap: 20px !important;
     align-items: baseline !important;
     justify-content: flex-end !important;
     max-width: none !important;
@@ -319,7 +319,7 @@ body,
     padding: 0 !important;
     border: none !important;
     box-shadow: none !important;
-    margin-top: 10px !important;
+    margin-top: -10px !important;
     /* Margen positivo para bajarlo y evitar superposición */
     margin-bottom: 0 !important;
     display: block !important;
@@ -337,7 +337,6 @@ body,
     /* Apilado vertical */
     gap: 0px !important;
     /* Gap mínimo */
-    align-items: flex-end !important;
     /* Alinear a la derecha */
     justify-content: flex-start !important;
     max-width: none !important;
@@ -358,9 +357,13 @@ body,
     background: transparent !important;
     border: none !important;
     border-radius: 0 !important;
-    gap: 12px !important;
+    gap: 2px !important;
+    row-gap: 2px !important;
     width: auto !important;
     min-width: 200px !important;
+    margin: 3px !important;
+    padding: 2px !important;
+
   }
 
   /* Tipografía compacta */
@@ -368,6 +371,7 @@ body,
     font-size: 11px !important;
     line-height: 1.2 !important;
     font-weight: normal !important;
+    line-height: 1 !important;
   }
 }
 
