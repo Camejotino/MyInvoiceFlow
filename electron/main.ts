@@ -430,6 +430,10 @@ ipcMain.handle('trucks:update', async (_, id, data) => {
 // Trucks: Delete
 ipcMain.handle('trucks:delete', async (_, id) => {
   try {
+    // Get truck to check number
+    const truck = await prisma.truck.findUnique({ where: { id } });
+    if (!truck) throw new Error('Camión no encontrado');
+
     // Check for associated tickets involved in an invoice
     const ticketsWithInvoice = await prisma.ticket.findFirst({
       where: {
@@ -449,6 +453,17 @@ ipcMain.handle('trucks:delete', async (_, id) => {
 
     if (anyTickets) {
       throw new Error('No se puede eliminar el camión porque tiene tickets registrados.');
+    }
+
+    // Check for usage in InvoiceRowItems (manual entries)
+    const usageInInvoices = await prisma.invoiceRowItem.findFirst({
+      where: {
+        truckNumber: truck.number
+      }
+    });
+
+    if (usageInInvoices) {
+      throw new Error(`No se puede eliminar el camión ${truck.number} porque está referenciado en una o más facturas.`);
     }
 
     const deleted = await prisma.truck.delete({ where: { id } });
