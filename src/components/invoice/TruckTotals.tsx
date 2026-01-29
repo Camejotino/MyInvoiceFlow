@@ -102,7 +102,7 @@ export default function TruckTotals({ control }: TruckTotalsProps) {
                                 style={{ backgroundColor: '#ECD8B6' }}
                             >
                                 <span className="text-sm font-medium" style={{ color: '#1F1E1D' }}>
-                                    Camión {truckNumber} {description ? `- ${description}` : ''}
+                                    Truck {truckNumber} {description ? `- ${description}` : ''}
                                 </span>
                                 <span className="text-sm font-semibold text-right" style={{ color: '#1F1E1D' }}>
                                     {formatCurrency(total)}
