@@ -401,3 +401,76 @@ body,
     display: block !important;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+@media print {
+
+  /* ================================
+     MOSTRAR SOLO SOLD TO E INVOICE #
+     OCULTAR DATE
+  ================================= */
+
+  /* Mostrar labels por defecto */
+  .invoice-header-right label {
+    display: inline-block !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    margin: 0 !important;
+    margin-right: 4px !important;
+  }
+
+  /* Ocultar únicamente Date */
+  .invoice-header-right .invoice-field:first-child label {
+    display: none !important;
+  }
+
+  /* ================================
+     SOLD TO → label + valor en línea
+  ================================= */
+
+  .invoice-header-right .invoice-field {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: baseline !important;
+    gap: 4px !important;
+    white-space: nowrap !important;
+  }
+
+  .invoice-header-right .invoice-field input {
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    font-size: 11px !important;
+    width: auto !important;
+  }
+
+  /* ================================
+     INVOICE # → label + número
+  ================================= */
+
+  .invoice-number-field {
+    display: inline-block !important;
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+  }
+
+  /* .invoice-number-field::before {
+    content: "Invoice #: ";
+    font-weight: 600;
+    margin-right: 4px;
+  } */
+}
