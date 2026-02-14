@@ -49,7 +49,7 @@ export default function InvoiceHeader({
 
           <div className="space-y-0 text-sm" style={{ color: "#74654F" }}>
             <p> 2301 W Shandon Ave Midland TX </p>
-            <p>Tel: (432) 503-6118 </p>
+            <p>Tel: (432) 530-6118 </p>
           </div>
         </div>
 
