@@ -147,6 +147,72 @@ class ApiClient implements IpcApi {
         }
         return res.json();
     }
+
+    // Customers
+    async searchCustomers(params: { q?: string; page?: number; pageSize?: number }): Promise<{ items: any[]; total: number; page: number; pageSize: number }> {
+        if (this.isElectron) {
+            return window.api.searchCustomers(params);
+        }
+        const searchParams = new URLSearchParams();
+        if (params.q) searchParams.append('q', params.q);
+        if (params.page) searchParams.append('page', params.page.toString());
+        if (params.pageSize) searchParams.append('pageSize', params.pageSize.toString());
+        const res = await fetch(`/api/customers?${searchParams}`);
+        if (!res.ok) throw new Error('Failed to search customers');
+        return res.json();
+    }
+
+    async getCustomer(id: number): Promise<any> {
+        if (this.isElectron) {
+            return window.api.getCustomer(id);
+        }
+        const res = await fetch(`/api/customers/${id}`);
+        if (!res.ok) throw new Error('Failed to get customer');
+        return res.json();
+    }
+
+    async createCustomer(data: { name: string; address?: string; phone?: string; email?: string; active?: boolean }): Promise<any> {
+        if (this.isElectron) {
+            return window.api.createCustomer(data);
+        }
+        const res = await fetch('/api/customers', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+        if (!res.ok) {
+            const error = await res.json();
+            throw new Error(error.message || 'Failed to create customer');
+        }
+        return res.json();
+    }
+
+    async updateCustomer(id: number, data: any): Promise<any> {
+        if (this.isElectron) {
+            return window.api.updateCustomer(id, data);
+        }
+        const res = await fetch(`/api/customers/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+        if (!res.ok) throw new Error('Failed to update customer');
+        return res.json();
+    }
+
+    async deleteCustomer(id: number): Promise<any> {
+        if (this.isElectron) {
+            return window.api.deleteCustomer(id);
+        }
+        const res = await fetch(`/api/customers/${id}`, {
+            method: 'DELETE',
+        });
+        if (!res.ok) {
+            const error = await res.json();
+            throw new Error(error.message || 'Failed to delete customer');
+        }
+        return res.json();
+    }
 }
 
 export const apiClient = new ApiClient();

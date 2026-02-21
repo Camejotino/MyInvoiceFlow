@@ -79,6 +79,16 @@ model InvoiceRowItem {
   @@index([invoiceId])
 }
 
+model Customer {
+  id        Int      @id @default(autoincrement())
+  name      String
+  address   String?
+  phone     String?
+  email     String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
 model Settings {
   id                 Int     @id @default(1)
   defaultDispatchFee Decimal

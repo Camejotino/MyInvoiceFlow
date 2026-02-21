@@ -1,8 +1,16 @@
 "use client";
 
-import { Control, useWatch, UseFormRegister, Controller } from "react-hook-form";
+import { Control, UseFormRegister, Controller } from "react-hook-form";
 import { Invoice } from "./types";
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import { apiClient } from "@/lib/api-client";
+
+interface Customer {
+  id: number;
+  name: string;
+  active: boolean;
+}
 
 interface InvoiceHeaderProps {
   control: Control<Invoice>;
@@ -19,7 +27,19 @@ export default function InvoiceHeader({
   register,
   invoiceNumber,
 }: InvoiceHeaderProps) {
-  // Eliminamos useWatch innecesarios que causaban re-renders
+  const [customers, setCustomers] = useState<Customer[]>([]);
+
+  useEffect(() => {
+    async function loadCustomers() {
+      try {
+        const data = await apiClient.searchCustomers({ pageSize: 200 });
+        setCustomers((data.items || []).filter((c: Customer) => c.active));
+      } catch (err) {
+        console.error('Error loading customers:', err);
+      }
+    }
+    loadCustomers();
+  }, []);
 
   return (
     <div
@@ -100,21 +120,54 @@ export default function InvoiceHeader({
               >
                 Sold To
               </label>
-              <input
-                type="text"
-                {...register("soldTo", { required: true })}
-                placeholder="Nombre del cliente"
-                className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none"
-                style={{ borderColor: "#74654F", borderWidth: "1px" }}
-                onFocus={(e) => {
-                  e.currentTarget.style.borderColor = "#F89E1A";
-                  e.currentTarget.style.boxShadow =
-                    "0 0 0 2px rgba(248, 158, 26, 0.2)";
-                }}
-                onBlur={(e) => {
-                  e.currentTarget.style.borderColor = "#74654F";
-                  e.currentTarget.style.boxShadow = "none";
-                }}
+              <Controller
+                control={control}
+                name="soldTo"
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <>
+                    {/* Select — visible on screen, hidden on print */}
+                    <select
+                      value={field.value || ''}
+                      onChange={(e) => field.onChange(e.target.value)}
+                      className="sold-to-select w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none"
+                      style={{
+                        borderColor: "#74654F",
+                        borderWidth: "1px",
+                        color: field.value ? "#1F1E1D" : "#74654F",
+                        backgroundColor: "#FEFEFE",
+                      }}
+                      onFocus={(e) => {
+                        e.currentTarget.style.borderColor = "#F89E1A";
+                        e.currentTarget.style.boxShadow = "0 0 0 2px rgba(248, 158, 26, 0.2)";
+                      }}
+                      onBlur={(e) => {
+                        e.currentTarget.style.borderColor = "#74654F";
+                        e.currentTarget.style.boxShadow = "none";
+                      }}
+                    >
+                      <option value="">-- Seleccionar cliente --</option>
+                      {customers.map((c) => (
+                        <option key={c.id} value={c.name}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+
+                    {/* Read-only input — hidden on screen, shown on print */}
+                    <input
+                      type="text"
+                      readOnly
+                      value={field.value || ''}
+                      className="sold-to-print w-full px-3 py-2 border rounded-md shadow-sm"
+                      style={{
+                        borderColor: "#74654F",
+                        borderWidth: "1px",
+                        display: "none",
+                      }}
+                    />
+                  </>
+                )}
               />
             </div>
 

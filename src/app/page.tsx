@@ -67,6 +67,14 @@ export default function HomePage() {
             >
               Administrar Rastras
             </Link>
+
+            <Link
+              href="/customers"
+              className="px-8 py-4 bg-neutral-white rounded-lg font-semibold text-lg shadow-lg transition-colors duration-200 transform hover:scale-105 border-2 hover-primary-light"
+              style={{ color: '#74654F', backgroundColor: '#FEFEFE', borderColor: '#74654F' }}
+            >
+              Administrar Clientes
+            </Link>
           </div>
         </div>
       </main>

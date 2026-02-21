@@ -15,4 +15,11 @@ contextBridge.exposeInMainWorld('api', {
     createTruck: (data: any) => ipcRenderer.invoke('trucks:create', data),
     updateTruck: (id: number, data: any) => ipcRenderer.invoke('trucks:update', id, data),
     deleteTruck: (id: number) => ipcRenderer.invoke('trucks:delete', id),
+
+    // Customers
+    searchCustomers: (params: any) => ipcRenderer.invoke('customers:list', params),
+    getCustomer: (id: number) => ipcRenderer.invoke('customers:get', id),
+    createCustomer: (data: any) => ipcRenderer.invoke('customers:create', data),
+    updateCustomer: (id: number, data: any) => ipcRenderer.invoke('customers:update', id, data),
+    deleteCustomer: (id: number) => ipcRenderer.invoke('customers:delete', id),
 });

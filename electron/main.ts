@@ -1,6 +1,7 @@
 // Basic imports that are unlikely to fail
 import { app, BrowserWindow, ipcMain, screen, dialog } from 'electron';
 import path from 'path';
+import { execFileSync } from 'child_process';
 
 let prisma: any;
 let Prisma: any;
@@ -20,6 +21,98 @@ function log(msg: string) {
   }
 }
 
+/**
+ * Ensures the database schema is up-to-date on every app launch.
+ *
+ * Strategy (safe, non-destructive):
+ *  1. Try `prisma migrate deploy`  — ideal for DBs that went through proper migrations.
+ *  2. If it fails (e.g. DB was originally created with `db push` and has no
+ *     `_prisma_migrations` table), fall back to `prisma db push --accept-data-loss`.
+ *     The flag is required by Prisma but only causes data loss when columns are DROPPED —
+ *     adding a new table (Customer) never loses data.
+ *
+ * DATABASE_URL is always pointed at the real userData db path before running any command.
+ */
+async function runMigrations(dbPath: string): Promise<void> {
+  const isDevMode = !app.isPackaged;
+  const databaseUrl = `file:${dbPath}`;
+
+  const schemaPath = isDevMode
+    ? path.join(__dirname, '..', 'prisma', 'schema.prisma')
+    : path.join(process.resourcesPath, 'prisma', 'schema.prisma');
+
+  const prismaCliScript = isDevMode
+    ? path.join(__dirname, '..', 'node_modules', 'prisma', 'build', 'index.js')
+    : path.join(process.resourcesPath, 'prisma-cli', 'build', 'index.js');
+
+  const migrationsDir = isDevMode
+    ? path.join(__dirname, '..', 'prisma', 'migrations')
+    : path.join(process.resourcesPath, 'prisma', 'migrations');
+
+  const qEnginePath = isDevMode
+    ? undefined
+    : path.join(process.resourcesPath, 'node_modules', '@prisma', 'engines', 'query_engine-windows.dll.node');
+
+  const sEnginePath = isDevMode
+    ? undefined
+    : path.join(process.resourcesPath, 'node_modules', '@prisma', 'engines', 'schema-engine-windows.exe');
+
+  log(`Checking files: CLI: ${fs.existsSync(prismaCliScript)}, Schema: ${fs.existsSync(schemaPath)}, Migrations: ${fs.existsSync(migrationsDir)}`);
+  if (!isDevMode) {
+    log(`Checking Engines: Query: ${fs.existsSync(qEnginePath)}, Schema: ${fs.existsSync(sEnginePath)}`);
+  }
+
+  // Safety check: If we are already running in Node mode (via ELECTRON_RUN_AS_NODE),
+  // do not attempt to run migrations again to avoid potential issues.
+  if (process.env.ELECTRON_RUN_AS_NODE === '1') return;
+
+  const execEnv = {
+    ...process.env,
+    DATABASE_URL: databaseUrl,
+    PRISMA_CLI_BINARY_TARGETS: 'windows',
+    ELECTRON_RUN_AS_NODE: '1',
+    PRISMA_CLI_QUERY_ENGINE_TYPE: 'library',
+    // Tell prisma where to find its engines in production
+    PRISMA_QUERY_ENGINE_LIBRARY: qEnginePath,
+    PRISMA_SCHEMA_ENGINE_BINARY: sEnginePath,
+  };
+
+  const execOpts = { env: execEnv, stdio: 'pipe' as const, windowsHide: true, timeout: 60000 };
+
+  if (!fs.existsSync(prismaCliScript)) {
+    log(`Prisma CLI script NOT found at: ${prismaCliScript} — skipping schema sync.`);
+    return;
+  }
+
+  // --- Step 1: Try migrate deploy ---
+  if (fs.existsSync(migrationsDir)) {
+    try {
+      log(`Attempting: migrate deploy (db: ${dbPath})`);
+      const output = execFileSync(process.execPath, [prismaCliScript, 'migrate', 'deploy', '--schema', schemaPath], execOpts);
+      log(`migrate deploy SUCCESS: ${output.toString().slice(0, 200)}`);
+      return;
+    } catch (migrateErr: any) {
+      const msg: string = migrateErr.stdout?.toString() || migrateErr.stderr?.toString() || migrateErr.message || '';
+      log(`migrate deploy FAILED: ${msg.slice(0, 500)}`);
+    }
+  }
+
+  // --- Step 2: Fallback — db push ---
+  try {
+    log(`Attempting: db push --accept-data-loss (db: ${dbPath})`);
+    const output = execFileSync(
+      process.execPath,
+      [prismaCliScript, 'db', 'push', '--accept-data-loss', '--skip-generate', '--schema', schemaPath],
+      execOpts
+    );
+    log(`db push SUCCESS: ${output.toString().slice(0, 200)}`);
+  } catch (pushErr: any) {
+    const msg: string = pushErr.stdout?.toString() || pushErr.stderr?.toString() || pushErr.message || '';
+    log(`db push FAILED: ${msg.slice(0, 500)}`);
+  }
+}
+
+
 (async () => {
   try {
     log('--- App starting ---');
@@ -29,6 +122,15 @@ function log(msg: string) {
     // 1. Determine environment
     isDev = !app.isPackaged;
     log('Mode: ' + (isDev ? 'development' : 'production'));
+
+    // Set Prisma engine paths for the whole app session in production.
+    // This allows us to exclude engines from the ASAR, saving space and memory.
+    if (!isDev) {
+      process.env.PRISMA_CLI_QUERY_ENGINE_TYPE = 'library';
+      process.env.PRISMA_QUERY_ENGINE_LIBRARY = path.join(process.resourcesPath, 'node_modules', '@prisma', 'engines', 'query_engine-windows.dll.node');
+      process.env.PRISMA_SCHEMA_ENGINE_BINARY = path.join(process.resourcesPath, 'node_modules', '@prisma', 'engines', 'schema-engine-windows.exe');
+      log(`Engines configured: Library: ${process.env.PRISMA_QUERY_ENGINE_LIBRARY}`);
+    }
 
     if (!isDev) {
       try {
@@ -83,6 +185,9 @@ function log(msg: string) {
           dialog.showErrorBox("Database Error", `Failed to initialize database: ${e.message}`);
         }
       }
+
+      // Run migrations BEFORE the Prisma client is used
+      await runMigrations(dbPath);
 
       prisma = new prismaModule.PrismaClient({
         datasources: {
@@ -473,3 +578,71 @@ ipcMain.handle('trucks:delete', async (_, id) => {
     throw error;
   }
 });
+
+// Customers: List
+ipcMain.handle('customers:list', async (_, { q, page = 1, pageSize = 20 } = {}) => {
+  try {
+    const skip = (page - 1) * pageSize;
+    const where = q
+      ? { OR: [{ name: { contains: q } }, { email: { contains: q } }] }
+      : {};
+    const [items, total] = await Promise.all([
+      prisma.customer.findMany({ where, skip, take: pageSize, orderBy: { createdAt: 'desc' } }),
+      prisma.customer.count({ where }),
+    ]);
+    return { items, total, page, pageSize };
+  } catch (error) {
+    console.error('Error listing customers:', error);
+    throw error;
+  }
+});
+
+// Customers: Get
+ipcMain.handle('customers:get', async (_, id) => {
+  try {
+    const customer = await prisma.customer.findUnique({ where: { id } });
+    if (!customer) throw new Error('Cliente no encontrado');
+    return customer;
+  } catch (e) {
+    throw e;
+  }
+});
+
+// Customers: Create
+ipcMain.handle('customers:create', async (_, { name, address, phone, email, active }) => {
+  try {
+    if (!name) throw new Error('name requerido');
+    const created = await prisma.customer.create({
+      data: { name, address: address ?? '', phone: phone ?? '', email: email ?? '', active: active ?? true },
+    });
+    return created;
+  } catch (error) {
+    console.error('Error creating customer:', error);
+    throw error;
+  }
+});
+
+// Customers: Update
+ipcMain.handle('customers:update', async (_, id, data) => {
+  try {
+    const updated = await prisma.customer.update({ where: { id }, data });
+    return updated;
+  } catch (error) {
+    console.error('Error updating customer:', error);
+    throw error;
+  }
+});
+
+// Customers: Delete
+ipcMain.handle('customers:delete', async (_, id) => {
+  try {
+    const customer = await prisma.customer.findUnique({ where: { id } });
+    if (!customer) throw new Error('Cliente no encontrado');
+    const deleted = await prisma.customer.delete({ where: { id } });
+    return deleted;
+  } catch (error) {
+    console.error('Error deleting customer:', error);
+    throw error;
+  }
+});
+

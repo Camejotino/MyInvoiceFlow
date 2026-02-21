@@ -46,14 +46,15 @@
     "publish": null,
     "asar": true,
     "asarUnpack": [
-      "dist-electron/prisma-client/query_engine-windows.dll.node",
       "out/index.html",
       "out/_next/**/*"
     ],
     "files": [
       "out/**/*",
       "dist-electron/**/*",
-      "public/**/*"
+      "public/**/*",
+      "!dist-electron/prisma-client/query_engine-windows.dll.node",
+      "!dist-electron/prisma-client/schema-engine-windows.exe"
     ],
     "extraResources": [
       {
@@ -66,6 +67,34 @@
       {
         "from": "prisma/data/dev.db",
         "to": "prisma/data/dev.db"
+      },
+      {
+        "from": "prisma/migrations/",
+        "to": "prisma/migrations/",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "prisma/schema.prisma",
+        "to": "prisma/schema.prisma"
+      },
+      {
+        "from": "node_modules/prisma",
+        "to": "prisma-cli",
+        "filter": [
+          "build/**/*",
+          "package.json",
+          "runtime/**/*"
+        ]
+      },
+      {
+        "from": "node_modules/@prisma",
+        "to": "node_modules/@prisma",
+        "filter": [
+          "**/*",
+          "!client/**/*"
+        ]
       }
     ],
     "win": {

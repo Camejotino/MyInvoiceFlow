@@ -172,6 +172,16 @@ exports.Prisma.InvoiceRowItemScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.CustomerScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  address: 'address',
+  phone: 'phone',
+  email: 'email',
+  active: 'active',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SettingsScalarFieldEnum = {
   id: 'id',
   defaultDispatchFee: 'defaultDispatchFee',
@@ -196,6 +206,7 @@ exports.Prisma.ModelName = {
   Ticket: 'Ticket',
   Invoice: 'Invoice',
   InvoiceRowItem: 'InvoiceRowItem',
+  Customer: 'Customer',
   Settings: 'Settings'
 };
 

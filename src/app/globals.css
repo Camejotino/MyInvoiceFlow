@@ -474,3 +474,26 @@ body,
     margin-right: 4px;
   } */
 }
+
+/* Sold To: show select on screen, show plain input on print */
+.sold-to-print {
+  display: none !important;
+}
+
+@media print {
+  /* Hide the dropdown select when printing */
+  .sold-to-select {
+    display: none !important;
+  }
+
+  /* Show the read-only plain input when printing */
+  .sold-to-print {
+    display: block !important;
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    font-size: 11px !important;
+    width: auto !important;
+    box-shadow: none !important;
+  }
+}
